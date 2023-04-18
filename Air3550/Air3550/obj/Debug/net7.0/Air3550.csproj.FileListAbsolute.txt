@@ -1,0 +1,15 @@
+C:\Users\cdavi\Desktop\Air3550\Air3550\bin\Debug\net7.0\Air3550.exe
+C:\Users\cdavi\Desktop\Air3550\Air3550\bin\Debug\net7.0\Air3550.deps.json
+C:\Users\cdavi\Desktop\Air3550\Air3550\bin\Debug\net7.0\Air3550.runtimeconfig.json
+C:\Users\cdavi\Desktop\Air3550\Air3550\bin\Debug\net7.0\Air3550.dll
+C:\Users\cdavi\Desktop\Air3550\Air3550\bin\Debug\net7.0\Air3550.pdb
+C:\Users\cdavi\Desktop\Air3550\Air3550\obj\Debug\net7.0\Air3550.csproj.AssemblyReference.cache
+C:\Users\cdavi\Desktop\Air3550\Air3550\obj\Debug\net7.0\Air3550.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\cdavi\Desktop\Air3550\Air3550\obj\Debug\net7.0\Air3550.AssemblyInfoInputs.cache
+C:\Users\cdavi\Desktop\Air3550\Air3550\obj\Debug\net7.0\Air3550.AssemblyInfo.cs
+C:\Users\cdavi\Desktop\Air3550\Air3550\obj\Debug\net7.0\Air3550.csproj.CoreCompileInputs.cache
+C:\Users\cdavi\Desktop\Air3550\Air3550\obj\Debug\net7.0\Air3550.dll
+C:\Users\cdavi\Desktop\Air3550\Air3550\obj\Debug\net7.0\refint\Air3550.dll
+C:\Users\cdavi\Desktop\Air3550\Air3550\obj\Debug\net7.0\Air3550.pdb
+C:\Users\cdavi\Desktop\Air3550\Air3550\obj\Debug\net7.0\Air3550.genruntimeconfig.cache
+C:\Users\cdavi\Desktop\Air3550\Air3550\obj\Debug\net7.0\ref\Air3550.dll
