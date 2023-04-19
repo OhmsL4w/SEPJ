@@ -16,7 +16,7 @@ class Program
             Console.WriteLine("2. Quit");
             Console.WriteLine("3. Create Account");
             string? input = Console.ReadLine();
-            if(input == null |( input != "1" & input != "2"))
+            if(input == null |( input != "1" & input != "2" & input != "3"))
             {
                 Console.WriteLine("Please input a correct input");
                 continue;

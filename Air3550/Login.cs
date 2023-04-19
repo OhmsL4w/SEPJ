@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -60,6 +61,103 @@ public class Login
 
     public static void CreateAccount()
     {
+        Console.WriteLine("Please enter Account information");
+        Console.WriteLine("First Name");
+        string? firstName = Console.ReadLine();
+        while (firstName == null)
+        {
+            Console.WriteLine("Please enter a name\nFirst Name");
+            firstName = Console.ReadLine();
+        }
+        Console.WriteLine("Last Name");
+        string? lastName = Console.ReadLine();
+        while (lastName == null)
+        {
+            Console.WriteLine("Please enter a name\nLast Name");
+            lastName = Console.ReadLine();
+        }
+        Console.WriteLine("Date of Birth (mm/dd/yyyy)");
+        string? birthDay = Console.ReadLine();
+        while(birthDay == null)
+        {
+            Console.WriteLine("Please enter a correct date\nDate of Birth (mm/dd/yyyy)");
+            birthDay = Console.ReadLine();
+        }
+        // convert that into a sql Date
+        // first got to a date time with the format
+        DateTime bdayDateTime = DateTime.Parse(birthDay);
+        // using the dateTime, create the SqlDateTime
+        SqlDateTime sqlBdayDateTime = new SqlDateTime(bdayDateTime.Year, bdayDateTime.Month, bdayDateTime.Day);
+        //Console.WriteLine($"{bdayDateTime.Year}/{bdayDateTime.Month}/{bdayDateTime.Day}");
+        Console.WriteLine("Street Address");
+        string? address = Console.ReadLine();
+        while (address == null)
+        {
+            Console.WriteLine("Please enter an address\nAddress");
+            address = Console.ReadLine();
+        }
+        Console.WriteLine("Phone Number (xxx-xxx-xxxx)");
+        string? phone = Console.ReadLine();
+        while (phone == null)
+        {
+            Console.WriteLine("Please enter a correct phone number\nPhone Number");
+            phone = Console.ReadLine();
+        }
+        Console.WriteLine("Password");
+        string? password = Console.ReadLine();
+        while (password == null)
+        {
+            Console.WriteLine("Please enter a password\nPassword");
+            password = Console.ReadLine();
+        }
+        // encrypt immediately
+        byte[] hashByte;
+        var data = Encoding.UTF8.GetBytes(password);
+        using (SHA512 shaM = new SHA512Managed())
+        {
+            hashByte = shaM.ComputeHash(data);
+        }
+        // Have the byte array of the hash, convert it to a string, replace the - with a blank after
+        string hashedPassword = BitConverter.ToString(hashByte);
+        hashedPassword = hashedPassword.Replace("-", "");
+        //Console.WriteLine(hash);
+        Random r = new Random();
+        int userID;
+        using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+        {
+            sqlConn.Open();
+            while(true)
+            {
+                int i = 0;
+                // generate a random userID, then check if there is already one in the database, inefficient but easier
+                userID = r.Next(100000, 999999);
+                string queryStringChecking = @"SELECT TOP 1 UserID FROM Users WHERE Users.UserID =" + userID;
+                SqlCommand query = new SqlCommand(queryStringChecking, sqlConn);
+                using (SqlDataReader reader = query.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        // there is already a user with this ID
+                        i++;
+                    }
+                }
+                
+                if (i == 0) // there was no results
+                {
+                    break;
+                }
+            }
+            // have all the information, now input it into the database
+            string queryStringInsert = $"INSERT INTO Users (UserID, IsManager, IsEngineer, Password, FirstName, LastName, Address, PointsAvailable, Phone, Birthday, PointsUsed) " + 
+                $"VALUES ({userID}, 0, 0, \'{hashedPassword}\', \'{firstName}\', \'{lastName}\', \'{address}\', 0, \'{phone}\', \'{sqlBdayDateTime}\', 0)";
+            SqlCommand queryInsert = new SqlCommand(queryStringInsert, sqlConn);
+            int rows = queryInsert.ExecuteNonQuery();
+            if(rows > 0)
+            {
+                Console.WriteLine($"Successfully created user! UserID:{userID}");
+            }
+            sqlConn.Close();
+        }
         return;
     }
 
