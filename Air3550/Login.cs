@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Air3550;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 
 public class Login
@@ -55,7 +52,8 @@ public class Login
                     return;
             }
         }
-        //LoggedIn(username); // give the username to the function to find the user again
+        LoggedIn logIn = new LoggedIn(username); // give the username to the function to find the user again
+        logIn.LoggedInLoop();
         return;
     }
 
