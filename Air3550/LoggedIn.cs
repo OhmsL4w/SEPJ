@@ -19,7 +19,7 @@ namespace Air3550
             using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
             {
                 sqlConn.Open();
-                string queryString = "SELECT IsManager, IsEngineer, FirstName, LastName, Phone, Birthday, PointsAvailable, PointsUsed, CreditCard FROM Users WHERE Users.UserID =" + "\'" + UserID + "\'";
+                string queryString = "SELECT IsManager, IsEngineer, FirstName, LastName, Phone, Birthday, PointsAvailable, PointsUsed, CreditCard, Address FROM Users WHERE Users.UserID =" + "\'" + UserID + "\'";
                 SqlCommand query = new SqlCommand(queryString, sqlConn);
                 using (SqlDataReader reader = query.ExecuteReader())
                 {
@@ -29,10 +29,24 @@ namespace Air3550
                         CurUser.IsEngineer = reader.GetBoolean(1);
                         CurUser.FirstName = reader.GetString(2);
                         CurUser.LastName = reader.GetString(3);
-                        CurUser.Phone = reader.GetString(4);
-                        CurUser.Birthday = reader.GetSqlDateTime(5);
+                        if (!reader.IsDBNull(4))
+                        {
+                            CurUser.Phone = reader.GetString(4);
+                        }
+                        if (!reader.IsDBNull(5))
+                        {
+                            CurUser.Birthday = reader.GetDateTime(5);
+                        }
                         CurUser.PointsAvailable = reader.GetInt32(6);
-                        CurUser.CreditCard = reader.GetString(7);
+                        CurUser.PointsUsed = reader.GetInt32(7);
+                        if(!reader.IsDBNull(8))
+                        {
+                            CurUser.CreditCard = reader.GetString(8);
+                        }
+                        if (!reader.IsDBNull(9))
+                        {
+                            CurUser.Address = reader.GetString(9);
+                        }
                     }
                 }
                 sqlConn.Close();
@@ -49,8 +63,18 @@ namespace Air3550
                 Console.WriteLine("1. Book Flight");
                 Console.WriteLine("2. Change Account Information");
                 Console.WriteLine("3. View Past Flights");
+                Console.WriteLine("4. Cancel Flights");
+                Console.WriteLine("Q. Go Back");
+                if(CurUser.IsManager)
+                {
+                    Console.WriteLine("M. Choose Planes");
+                }
+                if(CurUser.IsEngineer)
+                {
+                    Console.WriteLine("E. Manage Flights");
+                }
                 string? input = Console.ReadLine();
-                if (input == null | (input != "1" & input != "2" & input != "3"))
+                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "Q"))
                 {
                     Console.WriteLine("Please input a correct input");
                     continue;
@@ -60,10 +84,35 @@ namespace Air3550
                     case "1":
                         Login.LoginMethod();
                         break;
-                    case "2":
+                    case "Q":
                         return;
+                    case "2":
+                        //Account.ChangeInformation();
+                        break;
                     case "3":
                         Login.CreateAccount();
+                        break;
+                    case "4":
+                        //Flights.CancelFlights();
+                        break;
+                    case "M":
+                        if(CurUser.IsManager) 
+                        {
+                            // Flights.ChoosePlanes();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Must be a Manager for this!");
+                        }
+                        break;
+                    case "E":
+                        if( CurUser.IsEngineer)
+                        {
+                            // Flights.ManageFlights();
+                        }else
+                        {
+                            Console.WriteLine("Must be an Engineer for this!");
+                        }
                         break;
                 }
             }
@@ -75,10 +124,11 @@ namespace Air3550
         public string UserID { get; set; } = "";
         public bool IsManager { get; set; } = false;
         public bool IsEngineer { get; set; } = false;
+        public string? Address { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? Phone { get; set; }
-        public SqlDateTime? Birthday { get; set; }
+        public DateTime? Birthday { get; set; }
         public int? PointsAvailable { get; set; }
         public int? PointsUsed { get; set; }
         public string? CreditCard { get; set; }
