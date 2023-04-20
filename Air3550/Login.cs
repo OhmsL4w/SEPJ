@@ -184,4 +184,144 @@ public class Login
         }
         return false;
     }
+    public static void ChangeAccountSettings(string username)
+    {
+
+        Console.WriteLine("Select an option for your Account to change");
+        Console.WriteLine("1. Password");
+        Console.WriteLine("2. Phone Number");
+        Console.WriteLine("3. Address");
+        Console.WriteLine("4. Credit Card");
+        Console.WriteLine("Q. Quit");
+
+        string? input = Console.ReadLine();
+        if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "Q"))
+        {
+            Console.WriteLine("Please input a correct input");
+            ChangeAccountSettings(username);
+        }
+        string? password, PNumber, Address, CCard, queryStringUpdate;
+        int rows;
+
+        //string queryStringInsert = $"INSERT INTO Users (UserID, IsManager, IsEngineer, Password, FirstName, LastName, Address, PointsAvailable, Phone, Birthday, PointsUsed) " +
+        //  $"VALUES ({userID}, 0, 0, \'{hashedPassword}\', \'{firstName}\', \'{lastName}\', \'{address}\', 0, \'{phone}\', \'{sqlBdayDateTime}\', 0)";
+        // open the database
+        // "jdbc:sqlserver://localhost;integratedSecurity=true;encrypt=false"
+        using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+        {
+            sqlConn.Open();
+        switch (input)
+        {
+        case "1": // Changing Password
+
+            do
+            {
+                Console.WriteLine("Please enter a password\nPassword");
+                password = Console.ReadLine();
+            } while (password == null);
+            //using Colbys password hashing method to hash and store the new password 
+            byte[] hashByte;
+            var data = Encoding.UTF8.GetBytes(password);
+            using (SHA512 shaM = new SHA512Managed())
+            {
+                hashByte = shaM.ComputeHash(data);
+            }
+            // Have the byte array of the hash, convert it to a string, replace the - with a blank after
+            string hashedPassword = BitConverter.ToString(hashByte);
+                  
+            hashedPassword = hashedPassword.Replace("-", "");
+            queryStringUpdate = $"UPDATE Users SET Password = @Password WHERE Users.UserID = @UserId";
+            // updating the password
+            using (SqlCommand queryUpdatePass = new SqlCommand(queryStringUpdate, sqlConn))
+            { 
+                queryUpdatePass.Parameters.AddWithValue("@Password", hashedPassword);
+                queryUpdatePass.Parameters.AddWithValue("@UserId", username);
+                rows = queryUpdatePass.ExecuteNonQuery();
+                if (rows > 0)
+                {
+                    Console.WriteLine("Successfully changed password ");
+                }
+                else
+                {
+                    Console.WriteLine("Unsuccessful password change.");
+                }
+            }
+            break;
+        case "2": // Changing Phone Number
+
+            do
+            {
+                    Console.WriteLine("Enter new Phone Number(XXX-XXX-XXXX)");
+                    PNumber = Console.ReadLine();
+            } while (PNumber == null);
+
+            queryStringUpdate = $"UPDATE Users SET Phone = @Phone WHERE Users.UserID = @UserId";
+            using (SqlCommand queryUpdatePhon = new SqlCommand(queryStringUpdate, sqlConn))
+            { 
+                queryUpdatePhon.Parameters.AddWithValue("@Phone", PNumber);
+                queryUpdatePhon.Parameters.AddWithValue("@UserId", username);
+                rows = queryUpdatePhon.ExecuteNonQuery();
+                if (rows > 0)
+                {
+                    Console.WriteLine("Successfully changed Phone");
+                }
+                else
+                {
+                    Console.WriteLine("Unsuccessful Phone change.");
+                }
+            }
+            break ;
+        case "3": // Changing Address
+            do
+            {
+                Console.WriteLine("Enter new Address");
+                Address = Console.ReadLine();
+            } while (Address == null);
+            queryStringUpdate = $"UPDATE Users SET Address = @Address WHERE Users.UserID = @UserId";
+          
+            using (SqlCommand queryUpdateAddr = new SqlCommand(queryStringUpdate, sqlConn))
+            {
+                queryUpdateAddr.Parameters.AddWithValue("@Address", Address);
+                queryUpdateAddr.Parameters.AddWithValue("@UserId", username);
+                rows = queryUpdateAddr.ExecuteNonQuery();
+                if (rows > 0)
+                {
+                    Console.WriteLine("Successfully changed Address ");
+                }
+                else
+                {
+                    Console.WriteLine("Unsuccessful Address change.");
+                }
+            }
+            break;
+        case "4": // Changing Credit Card
+            do
+            {
+                Console.WriteLine("Enter new Credit Card");
+                CCard = Console.ReadLine();
+            } while (CCard == null);
+            queryStringUpdate = $"UPDATE Users SET CreditCard = @CreditCard WHERE Users.UserID = @UserId";
+            using (SqlCommand queryUpdateCC = new SqlCommand(queryStringUpdate, sqlConn))
+            {
+                queryUpdateCC.Parameters.AddWithValue("@CreditCard", CCard);
+                queryUpdateCC.Parameters.AddWithValue("@UserId", username);
+                rows = queryUpdateCC.ExecuteNonQuery();
+                if (rows > 0)
+                {
+                    Console.WriteLine("Successfully changed Credit Card");
+                }
+                else
+                {
+                    Console.WriteLine("Unsuccessful Credit Card change.");
+                }
+            }
+                    break;
+        case "Q":// Quit
+            return;
+        }
+     
+            sqlConn.Close();
+        }
+
+    }
 }

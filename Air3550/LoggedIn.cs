@@ -57,7 +57,7 @@ namespace Air3550
         {
             while (true)
             {
-                Console.WriteLine($"Logged In as: {CurUser.FirstName} {CurUser.LastName}");
+                Console.WriteLine($"\nLogged In as: {CurUser.FirstName} {CurUser.LastName}");
                 Console.WriteLine($"Currently has {CurUser.PointsAvailable}\n");
                 Console.WriteLine("Input an option to continue");
                 Console.WriteLine("1. Book Flight");
@@ -87,7 +87,7 @@ namespace Air3550
                     case "Q":
                         return;
                     case "2":
-                        //Account.ChangeInformation();
+                        Login.ChangeAccountSettings(CurUser.UserID);
                         break;
                     case "3":
                         Login.CreateAccount();
