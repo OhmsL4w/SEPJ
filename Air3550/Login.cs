@@ -129,7 +129,7 @@ public class Login
                 int i = 0;
                 // generate a random userID, then check if there is already one in the database, inefficient but easier
                 userID = r.Next(100000, 999999);
-                string queryStringChecking = @"SELECT TOP 1 UserID FROM Users WHERE Users.UserID =" + userID;
+                string queryStringChecking = $"SELECT TOP 1 UserID FROM Users WHERE Users.UserID = {userID}";
                 SqlCommand query = new SqlCommand(queryStringChecking, sqlConn);
                 using (SqlDataReader reader = query.ExecuteReader())
                 {
