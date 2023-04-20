@@ -13,10 +13,10 @@ class Program
         {
             Console.WriteLine("Input a number to continue");
             Console.WriteLine("1. Login");
-            Console.WriteLine("2. Quit");
-            Console.WriteLine("3. Create Account");
+            Console.WriteLine("2. Create Account");
+            Console.WriteLine("Q. Quit");
             string? input = Console.ReadLine();
-            if(input == null |( input != "1" & input != "2" & input != "3"))
+            if(input == null |( input != "1" & input != "2" & input != "Q"))
             {
                 Console.WriteLine("Please input a correct input");
                 continue;
@@ -26,9 +26,9 @@ class Program
                 case "1":
                     Login.LoginMethod();
                     break;
-                case "2":
+                case "Q":
                     return;
-                case "3":
+                case "2":
                     Login.CreateAccount();
                     break;
             }
