@@ -19,7 +19,7 @@ namespace Air3550
             using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
             {
                 sqlConn.Open();
-                string queryString = "SELECT IsManager, IsEngineer, FirstName, LastName, Phone, Birthday, PointsAvailable, PointsUsed, CreditCard, Address FROM Users WHERE Users.UserID =" + "\'" + UserID + "\'";
+                string queryString = $"SELECT IsManager, IsEngineer, FirstName, LastName, Phone, Birthday, PointsAvailable, PointsUsed, CreditCard, Address FROM Users WHERE Users.UserID = {UserID}";
                 SqlCommand query = new SqlCommand(queryString, sqlConn);
                 using (SqlDataReader reader = query.ExecuteReader())
                 {
@@ -59,7 +59,7 @@ namespace Air3550
             {
                 Console.WriteLine($"Logged In as: {CurUser.FirstName} {CurUser.LastName}");
                 Console.WriteLine($"Currently has {CurUser.PointsAvailable}\n");
-                Console.WriteLine("Input a number to continue");
+                Console.WriteLine("Input an option to continue");
                 Console.WriteLine("1. Book Flight");
                 Console.WriteLine("2. Change Account Information");
                 Console.WriteLine("3. View Past Flights");
@@ -74,7 +74,7 @@ namespace Air3550
                     Console.WriteLine("E. Manage Flights");
                 }
                 string? input = Console.ReadLine();
-                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "Q"))
+                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "Q" & input != "M" & input != "E"))
                 {
                     Console.WriteLine("Please input a correct input");
                     continue;
@@ -108,7 +108,8 @@ namespace Air3550
                     case "E":
                         if( CurUser.IsEngineer)
                         {
-                            // Flights.ManageFlights();
+                            Flights flight = new Flights(CurUser);
+                            flight.ManageFlights();
                         }else
                         {
                             Console.WriteLine("Must be an Engineer for this!");
