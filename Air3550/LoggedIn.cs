@@ -16,7 +16,7 @@ namespace Air3550
         {
             CurUser = new User();
             CurUser.UserID = UserID;
-            using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+            using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Connect Timeout=30;Encrypt=False;"))
             {
                 sqlConn.Open();
                 string queryString = $"SELECT IsManager, IsEngineer, FirstName, LastName, Phone, Birthday, PointsAvailable, PointsUsed, CreditCard, Address FROM Users WHERE Users.UserID = {UserID}";
@@ -90,7 +90,7 @@ namespace Air3550
                         Login.ChangeAccountSettings(CurUser.UserID);
                         break;
                     case "3":
-                        Login.CreateAccount();
+                        Login.DisplayFlightHistory(CurUser.UserID);
                         break;
                     case "4":
                         //Flights.CancelFlights();

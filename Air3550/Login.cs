@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Security.Cryptography;
 using System.Text;
+using System.Transactions;
 
 
 public class Login
@@ -14,7 +15,7 @@ public class Login
         string? username = Console.ReadLine();
         Console.WriteLine("Input Password");
         string? password = Console.ReadLine();
-        if(username == null || password == null)
+        if (username == null || password == null)
         {
             Console.WriteLine("Please enter in a correct Username and Password");
             // retry it
@@ -35,13 +36,13 @@ public class Login
 
         // check against the database for the user with that username
         bool loginSuccess = TryLogin(username, hash);
-        if(!loginSuccess)
+        if (!loginSuccess)
         {
             Console.WriteLine("Invalid Username or Password!");
             Console.WriteLine("1. Try again");
             Console.WriteLine("2. Back");
             string? input = Console.ReadLine();
-            switch(input)
+            switch (input)
             {
                 case "1":
                     LoginMethod();
@@ -76,7 +77,7 @@ public class Login
         }
         Console.WriteLine("Date of Birth (mm/dd/yyyy)");
         string? birthDay = Console.ReadLine();
-        while(birthDay == null)
+        while (birthDay == null)
         {
             Console.WriteLine("Please enter a correct date\nDate of Birth (mm/dd/yyyy)");
             birthDay = Console.ReadLine();
@@ -121,10 +122,10 @@ public class Login
         //Console.WriteLine(hash);
         Random r = new Random();
         int userID;
-        using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+        using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Connect Timeout=30;Encrypt=False;"))
         {
             sqlConn.Open();
-            while(true)
+            while (true)
             {
                 int i = 0;
                 // generate a random userID, then check if there is already one in the database, inefficient but easier
@@ -139,18 +140,18 @@ public class Login
                         i++;
                     }
                 }
-                
+
                 if (i == 0) // there was no results
                 {
                     break;
                 }
             }
             // have all the information, now input it into the database
-            string queryStringInsert = $"INSERT INTO Users (UserID, IsManager, IsEngineer, Password, FirstName, LastName, Address, PointsAvailable, Phone, Birthday, PointsUsed) " + 
+            string queryStringInsert = $"INSERT INTO Users (UserID, IsManager, IsEngineer, Password, FirstName, LastName, Address, PointsAvailable, Phone, Birthday, PointsUsed) " +
                 $"VALUES ({userID}, 0, 0, \'{hashedPassword}\', \'{firstName}\', \'{lastName}\', \'{address}\', 0, \'{phone}\', \'{sqlBdayDateTime}\', 0)";
             SqlCommand queryInsert = new SqlCommand(queryStringInsert, sqlConn);
             int rows = queryInsert.ExecuteNonQuery();
-            if(rows > 0)
+            if (rows > 0)
             {
                 Console.WriteLine($"Successfully created user! UserID:{userID}");
             }
@@ -163,7 +164,7 @@ public class Login
     {
         // open the database
         // "jdbc:sqlserver://localhost;integratedSecurity=true;encrypt=false"
-        using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+        using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Connect Timeout=30;Encrypt=False;"))
         {
             sqlConn.Open();
             string queryString = "SELECT TOP 1 Password FROM Users WHERE Users.UserID =" + "\'" + username + "\'";
@@ -174,7 +175,7 @@ public class Login
                 {
                     // get the hashed password saved in the database and check in against the inputted password
                     string usersHash = reader.GetString(0);
-                    if(usersHash == hash)
+                    if (usersHash == hash)
                     {
                         return true;
                     }
@@ -207,121 +208,146 @@ public class Login
         //  $"VALUES ({userID}, 0, 0, \'{hashedPassword}\', \'{firstName}\', \'{lastName}\', \'{address}\', 0, \'{phone}\', \'{sqlBdayDateTime}\', 0)";
         // open the database
         // "jdbc:sqlserver://localhost;integratedSecurity=true;encrypt=false"
-        using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+        using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Connect Timeout=30;Encrypt=False;"))
         {
             sqlConn.Open();
-        switch (input)
-        {
-        case "1": // Changing Password
+            switch (input)
+            {
+                case "1": // Changing Password
 
-            do
-            {
-                Console.WriteLine("Please enter a password\nPassword");
-                password = Console.ReadLine();
-            } while (password == null);
-            //using Colbys password hashing method to hash and store the new password 
-            byte[] hashByte;
-            var data = Encoding.UTF8.GetBytes(password);
-            using (SHA512 shaM = new SHA512Managed())
-            {
-                hashByte = shaM.ComputeHash(data);
-            }
-            // Have the byte array of the hash, convert it to a string, replace the - with a blank after
-            string hashedPassword = BitConverter.ToString(hashByte);
-                  
-            hashedPassword = hashedPassword.Replace("-", "");
-            queryStringUpdate = $"UPDATE Users SET Password = @Password WHERE Users.UserID = @UserId";
-            // updating the password
-            using (SqlCommand queryUpdatePass = new SqlCommand(queryStringUpdate, sqlConn))
-            { 
-                queryUpdatePass.Parameters.AddWithValue("@Password", hashedPassword);
-                queryUpdatePass.Parameters.AddWithValue("@UserId", username);
-                rows = queryUpdatePass.ExecuteNonQuery();
-                if (rows > 0)
-                {
-                    Console.WriteLine("Successfully changed password ");
-                }
-                else
-                {
-                    Console.WriteLine("Unsuccessful password change.");
-                }
-            }
-            break;
-        case "2": // Changing Phone Number
+                    do
+                    {
+                        Console.WriteLine("Please enter a password\nPassword");
+                        password = Console.ReadLine();
+                    } while (password == null);
+                    //using Colbys password hashing method to hash and store the new password 
+                    byte[] hashByte;
+                    var data = Encoding.UTF8.GetBytes(password);
+                    using (SHA512 shaM = new SHA512Managed())
+                    {
+                        hashByte = shaM.ComputeHash(data);
+                    }
+                    // Have the byte array of the hash, convert it to a string, replace the - with a blank after
+                    string hashedPassword = BitConverter.ToString(hashByte);
 
-            do
-            {
-                    Console.WriteLine("Enter new Phone Number(XXX-XXX-XXXX)");
-                    PNumber = Console.ReadLine();
-            } while (PNumber == null);
-
-            queryStringUpdate = $"UPDATE Users SET Phone = @Phone WHERE Users.UserID = @UserId";
-            using (SqlCommand queryUpdatePhon = new SqlCommand(queryStringUpdate, sqlConn))
-            { 
-                queryUpdatePhon.Parameters.AddWithValue("@Phone", PNumber);
-                queryUpdatePhon.Parameters.AddWithValue("@UserId", username);
-                rows = queryUpdatePhon.ExecuteNonQuery();
-                if (rows > 0)
-                {
-                    Console.WriteLine("Successfully changed Phone");
-                }
-                else
-                {
-                    Console.WriteLine("Unsuccessful Phone change.");
-                }
-            }
-            break ;
-        case "3": // Changing Address
-            do
-            {
-                Console.WriteLine("Enter new Address");
-                Address = Console.ReadLine();
-            } while (Address == null);
-            queryStringUpdate = $"UPDATE Users SET Address = @Address WHERE Users.UserID = @UserId";
-          
-            using (SqlCommand queryUpdateAddr = new SqlCommand(queryStringUpdate, sqlConn))
-            {
-                queryUpdateAddr.Parameters.AddWithValue("@Address", Address);
-                queryUpdateAddr.Parameters.AddWithValue("@UserId", username);
-                rows = queryUpdateAddr.ExecuteNonQuery();
-                if (rows > 0)
-                {
-                    Console.WriteLine("Successfully changed Address ");
-                }
-                else
-                {
-                    Console.WriteLine("Unsuccessful Address change.");
-                }
-            }
-            break;
-        case "4": // Changing Credit Card
-            do
-            {
-                Console.WriteLine("Enter new Credit Card");
-                CCard = Console.ReadLine();
-            } while (CCard == null);
-            queryStringUpdate = $"UPDATE Users SET CreditCard = @CreditCard WHERE Users.UserID = @UserId";
-            using (SqlCommand queryUpdateCC = new SqlCommand(queryStringUpdate, sqlConn))
-            {
-                queryUpdateCC.Parameters.AddWithValue("@CreditCard", CCard);
-                queryUpdateCC.Parameters.AddWithValue("@UserId", username);
-                rows = queryUpdateCC.ExecuteNonQuery();
-                if (rows > 0)
-                {
-                    Console.WriteLine("Successfully changed Credit Card");
-                }
-                else
-                {
-                    Console.WriteLine("Unsuccessful Credit Card change.");
-                }
-            }
+                    hashedPassword = hashedPassword.Replace("-", "");
+                    queryStringUpdate = $"UPDATE Users SET Password = @Password WHERE Users.UserID = @UserId";
+                    // updating the password
+                    using (SqlCommand queryUpdatePass = new SqlCommand(queryStringUpdate, sqlConn))
+                    {
+                        queryUpdatePass.Parameters.AddWithValue("@Password", hashedPassword);
+                        queryUpdatePass.Parameters.AddWithValue("@UserId", username);
+                        rows = queryUpdatePass.ExecuteNonQuery();
+                        if (rows > 0)
+                        {
+                            Console.WriteLine("Successfully changed password ");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unsuccessful password change.");
+                        }
+                    }
                     break;
-        case "Q":// Quit
-            return;
-        }
-     
+                case "2": // Changing Phone Number
+
+                    do
+                    {
+                        Console.WriteLine("Enter new Phone Number(XXX-XXX-XXXX)");
+                        PNumber = Console.ReadLine();
+                    } while (PNumber == null);
+
+                    queryStringUpdate = $"UPDATE Users SET Phone = @Phone WHERE Users.UserID = @UserId";
+                    using (SqlCommand queryUpdatePhon = new SqlCommand(queryStringUpdate, sqlConn))
+                    {
+                        queryUpdatePhon.Parameters.AddWithValue("@Phone", PNumber);
+                        queryUpdatePhon.Parameters.AddWithValue("@UserId", username);
+                        rows = queryUpdatePhon.ExecuteNonQuery();
+                        if (rows > 0)
+                        {
+                            Console.WriteLine("Successfully changed Phone");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unsuccessful Phone change.");
+                        }
+                    }
+                    break;
+                case "3": // Changing Address
+                    do
+                    {
+                        Console.WriteLine("Enter new Address");
+                        Address = Console.ReadLine();
+                    } while (Address == null);
+                    queryStringUpdate = $"UPDATE Users SET Address = @Address WHERE Users.UserID = @UserId";
+
+                    using (SqlCommand queryUpdateAddr = new SqlCommand(queryStringUpdate, sqlConn))
+                    {
+                        queryUpdateAddr.Parameters.AddWithValue("@Address", Address);
+                        queryUpdateAddr.Parameters.AddWithValue("@UserId", username);
+                        rows = queryUpdateAddr.ExecuteNonQuery();
+                        if (rows > 0)
+                        {
+                            Console.WriteLine("Successfully changed Address ");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unsuccessful Address change.");
+                        }
+                    }
+                    break;
+                case "4": // Changing Credit Card
+                    do
+                    {
+                        Console.WriteLine("Enter new Credit Card");
+                        CCard = Console.ReadLine();
+                    } while (CCard == null);
+                    queryStringUpdate = $"UPDATE Users SET CreditCard = @CreditCard WHERE Users.UserID = @UserId";
+                    using (SqlCommand queryUpdateCC = new SqlCommand(queryStringUpdate, sqlConn))
+                    {
+                        queryUpdateCC.Parameters.AddWithValue("@CreditCard", CCard);
+                        queryUpdateCC.Parameters.AddWithValue("@UserId", username);
+                        rows = queryUpdateCC.ExecuteNonQuery();
+                        if (rows > 0)
+                        {
+                            Console.WriteLine("Successfully changed Credit Card");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unsuccessful Credit Card change.");
+                        }
+                    }
+                    break;
+                case "Q":// Quit
+                    return;
+            }
+
             sqlConn.Close();
         }
 
+    }
+    public static void DisplayFlightHistory(string username)
+    {
+        using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Connect Timeout=30;Encrypt=False;"))
+        {
+            sqlConn.Open();
+            string queryString = $"SELECT Flights.FlightID, Flights.OriginCity, Flights.DestinationCity, Flights.DepartureDateTime, Flights.ArrivalDateTime " +
+                                $"FROM Transactions " +
+                                $"JOIN Flights ON Transactions.FlightID = Flights.FlightID " +
+                                $"WHERE Transactions.UserID = {username}";
+            SqlCommand query = new SqlCommand(queryString, sqlConn);
+            using (SqlDataReader reader = query.ExecuteReader())
+                while (reader.Read())
+                {
+                    Console.WriteLine("Flight History: ");
+                    Console.WriteLine("...............");
+                    Console.WriteLine($"Flight Number: {reader["FlightID"]}");
+                    Console.WriteLine($"Origin Airport: {reader["OriginCity"]}");
+                    Console.WriteLine($"Destination Airport: {reader["DestinationCity"]}");              
+                    Console.WriteLine($"Departure Date Time: {reader["DepartureDateTime"]}");
+                    Console.WriteLine($"Arrival Date Time: {reader["ArrivalDateTime"]}");
+                }
+            Console.WriteLine("Flight historoy is empty");
+            sqlConn.Close();
+        }
     }
 }
