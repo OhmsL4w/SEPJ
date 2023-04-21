@@ -16,7 +16,8 @@ namespace Air3550
         {
             CurUser = new User();
             CurUser.UserID = UserID;
-            using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Connect Timeout=30;Encrypt=False;"))
+            //using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Encrypt=False;"))
+            using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
             {
                 sqlConn.Open();
                 string queryString = $"SELECT IsManager, IsEngineer, FirstName, LastName, Phone, Birthday, PointsAvailable, PointsUsed, CreditCard, Address FROM Users WHERE Users.UserID = {UserID}";
@@ -58,7 +59,7 @@ namespace Air3550
             while (true)
             {
                 Console.WriteLine($"\nLogged In as: {CurUser.FirstName} {CurUser.LastName}");
-                Console.WriteLine($"Currently has {CurUser.PointsAvailable}\n");
+                Console.WriteLine($"Currently has {CurUser.PointsAvailable} points\n");
                 Console.WriteLine("Input an option to continue");
                 Console.WriteLine("1. Book Flight");
                 Console.WriteLine("2. Change Account Information");

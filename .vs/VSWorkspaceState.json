@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Air3550"
   ],
-  "SelectedNode": "\\Air3550.sln",
+  "SelectedNode": "\\Air3550\\Flights.cs",
   "PreviewInSolutionExplorer": false
 }
