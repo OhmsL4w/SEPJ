@@ -8,6 +8,7 @@
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <ApplicationIcon />
     <StartupObject></StartupObject>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

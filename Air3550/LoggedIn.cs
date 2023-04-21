@@ -16,7 +16,7 @@ namespace Air3550
         {
             CurUser = new User();
             CurUser.UserID = UserID;
-            using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
                 sqlConn.Open();
                 string queryString = $"SELECT IsManager, IsEngineer, FirstName, LastName, Phone, Birthday, PointsAvailable, PointsUsed, CreditCard, Address FROM Users WHERE Users.UserID = {UserID}";
@@ -58,7 +58,7 @@ namespace Air3550
             while (true)
             {
                 Console.WriteLine($"\nLogged In as: {CurUser.FirstName} {CurUser.LastName}");
-                Console.WriteLine($"Currently has {CurUser.PointsAvailable}\n");
+                Console.WriteLine($"Currently has {CurUser.PointsAvailable} points\n");
                 Console.WriteLine("Input an option to continue");
                 Console.WriteLine("1. Book Flight");
                 Console.WriteLine("2. Change Account Information");
@@ -90,7 +90,7 @@ namespace Air3550
                         Login.ChangeAccountSettings(CurUser.UserID);
                         break;
                     case "3":
-                        Login.CreateAccount();
+                        Login.DisplayFlightHistory(CurUser.UserID);
                         break;
                     case "4":
                         //Flights.CancelFlights();

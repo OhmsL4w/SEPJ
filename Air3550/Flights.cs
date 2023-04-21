@@ -21,7 +21,7 @@ namespace Air3550
         {
             int flightID = 0;
             // find the flight from the information given
-            using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
                 // first get the flight ID for that flight
                 sqlConn.Open();
@@ -50,7 +50,7 @@ namespace Air3550
 
         public void ManageFlights()
         {
-            using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
                 // Get all of the flights from today and later
                 sqlConn.Open();
@@ -88,6 +88,7 @@ namespace Air3550
                             DeleteFlight();
                             break;
                         case "Q":
+                            sqlConn.Close();                       
                             return;
                     }
                 }
@@ -121,7 +122,7 @@ namespace Air3550
                     Console.WriteLine("Please input a Flight ID");
                     flight = Console.ReadLine();
                 }
-                using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+                using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
                 {
                     sqlConn.Open();
                     string queryString = $"SELECT FlightID, FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime FROM Flights WHERE FlightID = {flight}";
@@ -309,7 +310,7 @@ namespace Air3550
                     Console.WriteLine("Please input a Flight Number");
                     flight = Console.ReadLine();
                 }
-                using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+                using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
                 {
                     sqlConn.Open();
                     string queryString = $"SELECT FlightID, FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime FROM Flights WHERE FlightID = {flight}";
@@ -586,8 +587,7 @@ namespace Air3550
                 nads = Console.ReadLine();
             }
             SqlDateTime sqlnad = new SqlDateTime(nad.Year, nad.Month, nad.Day, nad.Hour, nad.Minute, nad.Second);
-
-            using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
                 // first get the flight ID for that flight
                 sqlConn.Open();
@@ -631,7 +631,7 @@ namespace Air3550
                     Console.WriteLine("Please input a Flight ID");
                     flight = Console.ReadLine();
                 }
-                using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+                using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
                 {
                     // first get the flight ID for that flight
                     sqlConn.Open();
@@ -653,7 +653,7 @@ namespace Air3550
                     Console.WriteLine("Please input a Flight Number");
                     flight = Console.ReadLine();
                 }
-                using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+                using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
                 {
                     // first get the flight ID for that flight
                     sqlConn.Open();
