@@ -122,8 +122,7 @@ public class Login
         //Console.WriteLine(hash);
         Random r = new Random();
         int userID;
-        //using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Encrypt=False;"))
-        using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+        using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
         {
             sqlConn.Open();
             while (true)
@@ -165,8 +164,7 @@ public class Login
     {
         // open the database
         // "jdbc:sqlserver://localhost;integratedSecurity=true;encrypt=false"
-        //using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Encrypt=False;"))
-        using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+        using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
         {
             sqlConn.Open();
             string queryString = "SELECT TOP 1 Password FROM Users WHERE Users.UserID =" + "\'" + username + "\'";
@@ -210,8 +208,7 @@ public class Login
         //  $"VALUES ({userID}, 0, 0, \'{hashedPassword}\', \'{firstName}\', \'{lastName}\', \'{address}\', 0, \'{phone}\', \'{sqlBdayDateTime}\', 0)";
         // open the database
         // "jdbc:sqlserver://localhost;integratedSecurity=true;encrypt=false"
-        //using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Encrypt=False;"))
-        using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+        using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
         {
             sqlConn.Open();
             switch (input)
@@ -329,8 +326,7 @@ public class Login
     }
     public static void DisplayFlightHistory(string username)
     {
-        //using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Encrypt=False;"))
-        using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+        using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
         {
             sqlConn.Open();
             string queryString = $"SELECT Flights.FlightID, Flights.OriginCity, Flights.DestinationCity, Flights.DepartureDateTime, Flights.ArrivalDateTime " +
@@ -349,7 +345,7 @@ public class Login
                     Console.WriteLine($"Departure Date Time: {reader["DepartureDateTime"]}");
                     Console.WriteLine($"Arrival Date Time: {reader["ArrivalDateTime"]}");
                 }
-            Console.WriteLine("Flight historoy is empty");
+            Console.WriteLine("Flight history is empty");
             sqlConn.Close();
         }
     }

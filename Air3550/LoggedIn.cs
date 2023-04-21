@@ -16,8 +16,7 @@ namespace Air3550
         {
             CurUser = new User();
             CurUser.UserID = UserID;
-            //using (SqlConnection sqlConn = new SqlConnection(connectionString: "Data Source=(localdb)\\ProjectModels;Initial Catalog=Air3550;Integrated Security=True;Encrypt=False;"))
-            using (SqlConnection sqlConn = new SqlConnection("Data Source=(local);Database=Air3550;Integrated Security=true;"))
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
                 sqlConn.Open();
                 string queryString = $"SELECT IsManager, IsEngineer, FirstName, LastName, Phone, Birthday, PointsAvailable, PointsUsed, CreditCard, Address FROM Users WHERE Users.UserID = {UserID}";
