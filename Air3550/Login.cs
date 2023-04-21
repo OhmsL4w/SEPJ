@@ -325,8 +325,10 @@ public class Login
     }
     public static void DisplayFlightHistory(string username)
     {
+        bool hasFlightHistory = false;
         using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
         {
+            
             sqlConn.Open();
             string queryString = $"SELECT Flights.FlightID, Flights.OriginCity, Flights.DestinationCity, Flights.DepartureDateTime, Flights.ArrivalDateTime " +
                                 $"FROM Transactions " +
@@ -336,6 +338,7 @@ public class Login
             using (SqlDataReader reader = query.ExecuteReader())
                 while (reader.Read())
                 {
+                    hasFlightHistory = true;
                     Console.WriteLine("Flight History: ");
                     Console.WriteLine("...............");
                     Console.WriteLine($"Flight Number: {reader["FlightID"]}");
@@ -343,9 +346,13 @@ public class Login
                     Console.WriteLine($"Destination Airport: {reader["DestinationCity"]}");
                     Console.WriteLine($"Departure Date Time: {reader["DepartureDateTime"]}");
                     Console.WriteLine($"Arrival Date Time: {reader["ArrivalDateTime"]}");
-                }
-            Console.WriteLine("Flight history is empty");
-            sqlConn.Close();
+                } 
+            sqlConn.Close();        
         }
+        
+        if (!hasFlightHistory)
+        {
+            Console.WriteLine("No flight history found for the given user.");
+        }      
     }
 }
