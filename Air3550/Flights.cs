@@ -88,6 +88,7 @@ namespace Air3550
                             DeleteFlight();
                             break;
                         case "Q":
+                            sqlConn.Close();                       
                             return;
                     }
                 }

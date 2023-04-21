@@ -214,7 +214,6 @@ public class Login
             switch (input)
             {
                 case "1": // Changing Password
-
                     do
                     {
                         Console.WriteLine("Please enter a password\nPassword");
