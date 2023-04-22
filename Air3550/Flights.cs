@@ -619,7 +619,9 @@ namespace Air3550
             }
 
             SqlDateTime sqlnad = new SqlDateTime(nad.Year, nad.Month, nad.Day, nad.Hour, nad.Minute, nad.Second);
-          
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+                { 
+                        sqlConn.Open();
                 DateTime endDate = DateTime.Now.AddMonths(7);
                 DateTime departureDate = ndd;
                 while (departureDate <= endDate)
@@ -630,14 +632,11 @@ namespace Air3550
                     SqlDateTime sqlArrivalDate = new SqlDateTime(departureDate.Year, departureDate.Month, departureDate.Day, nad.Hour, nad.Minute, nad.Second);
 
                     string queryString = $"INSERT INTO Flights (FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime)" +
-                    $"VALUES ({nfn}, \'{noa}\', \'{nda}\', {np}, \'{sqlDepartureDate}\', \'{sqlArrivalDate}\')";               
-                using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
-                { 
-                        sqlConn.Open();
+                    $"VALUES ({nfn}, \'{noa}\', \'{nda}\', {np}, \'{sqlDepartureDate}\', \'{sqlArrivalDate}\')";                             
                         SqlCommand query = new SqlCommand(queryString, sqlConn);
-                        int rows = query.ExecuteNonQuery();
-                        sqlConn.Close();
-                    }             
+                        int rows = query.ExecuteNonQuery();                      
+                    }  
+                sqlConn.Close();
                 }
                 Console.WriteLine("Flights added for the next 6 months!");                  
         }
