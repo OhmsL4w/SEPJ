@@ -61,8 +61,8 @@ namespace Air3550
                     while (reader.Read())
                     {
                         Console.WriteLine($"FlightID:{reader.GetInt32(0)}  FlightNumber: {reader.GetInt32(1)}  Origin Airport: {reader.GetString(2)}  Destination Aiport: {reader.GetString(3)}" +
-                            $" \nPrice: {reader.GetDecimal(4)} \t Departure Date: {reader.GetDateTime(5).ToString("d")}  Departure Time: {reader.GetDateTime(5).ToString("T")} " +
-                            $"\n\t\t   Arrival Date: {reader.GetDateTime(6).ToString("d")}    Arrival Time: {reader.GetDateTime(6).ToString("T")}");
+                            $" \nPrice: {reader.GetDecimal(4)}  \tDeparture Date: {reader.GetDateTime(5).ToString("d")}  Departure Time: {reader.GetDateTime(5).ToString("T")} " +
+                            $"\n\t\t   Arrival Date: {reader.GetDateTime(6).ToString("d")}    Arrival Time: {reader.GetDateTime(6).ToString("T")}\n");
                     }
                 }
                 while(true)
@@ -673,15 +673,23 @@ namespace Air3550
                 {
                     // first get the flight ID for that flight
                     sqlConn.Open();
+                    // Get the flight number for that flight
+                    string getFlightNumberQueryString = $"SELECT FlightNumber FROM Flights WHERE FlightID = {flight}";
+                    SqlCommand getFlightNumberQuery = new SqlCommand(getFlightNumberQueryString, sqlConn);
+                    string flightNumber = getFlightNumberQuery.ExecuteScalar().ToString();
+                    // Refund the flight
+                    RefundFlight(flightNumber);
+
                     string queryString = $"DELETE Flights WHERE FlightID = {flight}";
-                    SqlCommand query = new SqlCommand(queryString, sqlConn);
+                    SqlCommand query = new SqlCommand(queryString, sqlConn);                  
                     int rows = query.ExecuteNonQuery();
                     if (rows > 0)
                     {
                         Console.WriteLine("Successfully deleted the flight!");
-                    }
+                    }                  
                     sqlConn.Close();
                 }
+
             }else
             {
                 Console.WriteLine("Input a Flight Number");
@@ -696,15 +704,49 @@ namespace Air3550
                     // first get the flight ID for that flight
                     sqlConn.Open();
                     string queryString = $"DELETE Flights WHERE FlightNumber = {flight}";
-                    SqlCommand query = new SqlCommand(queryString, sqlConn);
+                    RefundFlight(flight);
+                    SqlCommand query = new SqlCommand(queryString, sqlConn);                  
                     int rows = query.ExecuteNonQuery();
                     if (rows > 0)
                     {
                         Console.WriteLine($"Successfully deleted the flight! Deleted: {rows}");
-                    }
+                    }                 
                     sqlConn.Close();
                 }
             }
         }
+        public static void RefundFlight(string flightID)
+        {
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
+                sqlConn.Open();
+                // Get the user ID and payment amount for the transaction associated with this flight
+                string transactionQueryString = $"SELECT UserID, AmountCharged FROM Transactions WHERE FlightID = {flightID}";
+                SqlCommand transactionQuery = new SqlCommand(transactionQueryString, sqlConn);
+                SqlDataReader transactionReader = transactionQuery.ExecuteReader();
+                int userID = -1;
+                decimal paymentAmount = -1;
+                if (transactionReader.Read())
+                {
+                    userID = (int)transactionReader["UserID"];
+                    paymentAmount = (decimal)transactionReader["AmountCharged"];
+                }
+                transactionReader.Close();
+                if (userID != -1 && paymentAmount != -1)
+                {
+                    // Refund the payment to the user
+                    string refundQueryString = $"UPDATE Users SET CreditCard = CreditCard + {paymentAmount} WHERE UserID = {userID}";
+                    SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
+                    refundQuery.ExecuteNonQuery();                   
+                    Console.WriteLine($"Flight {flightID} has been deleted and a refund of ${paymentAmount} has been issued to user {userID}");
+                }
+                else
+                {
+                    Console.WriteLine($"No transaction found for flight {flightID}");
+                }
+                sqlConn.Close();
+            }
+        }
+
     }
 }

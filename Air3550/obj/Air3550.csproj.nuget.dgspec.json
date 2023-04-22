@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Bear\\source\\repos\\OhmsL4w\\SEPJ\\Air3550\\Air3550.csproj": {}
+    "C:\\Users\\Bear\\Source\\Repos\\OhmsL4w\\SEPJ\\Air3550\\Air3550.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Bear\\source\\repos\\OhmsL4w\\SEPJ\\Air3550\\Air3550.csproj": {
+    "C:\\Users\\Bear\\Source\\Repos\\OhmsL4w\\SEPJ\\Air3550\\Air3550.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Bear\\source\\repos\\OhmsL4w\\SEPJ\\Air3550\\Air3550.csproj",
+        "projectUniqueName": "C:\\Users\\Bear\\Source\\Repos\\OhmsL4w\\SEPJ\\Air3550\\Air3550.csproj",
         "projectName": "Air3550",
-        "projectPath": "C:\\Users\\Bear\\source\\repos\\OhmsL4w\\SEPJ\\Air3550\\Air3550.csproj",
+        "projectPath": "C:\\Users\\Bear\\Source\\Repos\\OhmsL4w\\SEPJ\\Air3550\\Air3550.csproj",
         "packagesPath": "C:\\Users\\Bear\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Bear\\source\\repos\\OhmsL4w\\SEPJ\\Air3550\\obj\\",
+        "outputPath": "C:\\Users\\Bear\\Source\\Repos\\OhmsL4w\\SEPJ\\Air3550\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Bear\\AppData\\Roaming\\NuGet\\NuGet.Config",
