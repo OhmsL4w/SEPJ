@@ -60,7 +60,9 @@ namespace Air3550
                 {
                     while (reader.Read())
                     {
-                        Console.WriteLine($"FlightID:{reader.GetInt32(0)}  FlightNumber: {reader.GetInt32(1)}  Origin Airport: {reader.GetString(2)}  Destination Aiport: {reader.GetString(3)}  Price: {reader.GetDecimal(4)}  Departure Date: {reader.GetDateTime(5).ToString("d")}  Departure Time: {reader.GetDateTime(5).ToString("T")}  Arrival Date: {reader.GetDateTime(6).ToString("d")}  Arrival Time: {reader.GetDateTime(6).ToString("T")}");
+                        Console.WriteLine($"FlightID:{reader.GetInt32(0)}  FlightNumber: {reader.GetInt32(1)}  Origin Airport: {reader.GetString(2)}  Destination Aiport: {reader.GetString(3)}" +
+                            $" \nPrice: {reader.GetDecimal(4)} \t Departure Date: {reader.GetDateTime(5).ToString("d")}  Departure Time: {reader.GetDateTime(5).ToString("T")} " +
+                            $"\n\t\t   Arrival Date: {reader.GetDateTime(6).ToString("d")}    Arrival Time: {reader.GetDateTime(6).ToString("T")}");
                     }
                 }
                 while(true)
@@ -69,9 +71,10 @@ namespace Air3550
                     Console.WriteLine("1. Update Flight");
                     Console.WriteLine("2. Add Flight");
                     Console.WriteLine("3. Delete Flight");
+                 // Console.WriteLine("4. Display All Flight");
                     Console.WriteLine("Q. Go Back");
                     string? input = Console.ReadLine();
-                    if (input == null | (input != "1" & input != "2" & input != "3" & input != "Q"))
+                    if (input == null | (input != "1" & input != "2" & input != "3"  &input != "Q"))
                     {
                         Console.WriteLine("Please input a correct input");
                         continue;
@@ -85,8 +88,11 @@ namespace Air3550
                             AddFlight();
                             break;
                         case "3":
-                            DeleteFlight();
+                            DeleteFlight();                         
                             break;
+                       /* case "4":
+                            DisplayAllFlights();
+                            break;*/
                         case "Q":
                             sqlConn.Close();                       
                             return;
@@ -94,6 +100,32 @@ namespace Air3550
                 }
             }
         }
+/*        public void DisplayAllFlights()
+        {
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
+                sqlConn.Open();
+                string queryString = "SELECT * FROM Flights";
+                SqlCommand query = new SqlCommand(queryString, sqlConn);
+                SqlDataReader reader = query.ExecuteReader();
+
+                Console.WriteLine("Flights:");
+
+                while (reader.Read())
+                {
+                    int flightNumber = reader.GetInt32(1);
+                    string originCity = reader.GetString(2);
+                    string destinationCity = reader.GetString(3);
+                    decimal price = reader.GetDecimal(4);
+                    DateTime departureDateTime = reader.GetDateTime(5);
+                    DateTime arrivalDateTime = reader.GetDateTime(6);
+
+                    Console.WriteLine($"Flight Number: {flightNumber}, Origin City: {originCity}, Destination City: {destinationCity}, Price: {price}, Departure Time: {departureDateTime}, Arrival Time: {arrivalDateTime}");
+                }
+                sqlConn.Close();
+            }
+        }*/
+
         public void UpdateFlight()
         {
             bool flightID = false;
@@ -511,7 +543,7 @@ namespace Air3550
                 Console.WriteLine("Input a new Flight Number");
                 nfns = Console.ReadLine();
             }
-            
+
             Console.WriteLine("Input a new Origin Airport");
             string? noa = Console.ReadLine();
             while (noa == null | noa?.Length != 3)
@@ -521,7 +553,6 @@ namespace Air3550
                 Console.WriteLine("Input a new Airport Code");
                 noa = Console.ReadLine();
             }
-            
             Console.WriteLine("Input a new Destination Airport");
             string? nda = Console.ReadLine();
             while (nda == null | nda?.Length != 3)
@@ -531,7 +562,7 @@ namespace Air3550
                 Console.WriteLine("Input a new Airport Code");
                 nda = Console.ReadLine();
             }
-            
+
             Console.WriteLine("Input a new Price (xx.xx)");
             string? nps = Console.ReadLine();
             decimal np;
@@ -549,7 +580,7 @@ namespace Air3550
                 Console.WriteLine("Input a new Price (xx.xx)");
                 nps = Console.ReadLine();
             }
-            
+
             Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
             string? ndds = Console.ReadLine();
             DateTime ndd;
@@ -568,7 +599,7 @@ namespace Air3550
                 ndds = Console.ReadLine();
             }
             SqlDateTime sqlndd = new SqlDateTime(ndd.Year, ndd.Month, ndd.Day, ndd.Hour, ndd.Minute, ndd.Second);
-            
+
             Console.WriteLine("Input a new Arrival Date and Time (mm/dd/yyyy HH:MM:SS)");
             string? nads = Console.ReadLine();
             DateTime nad;
@@ -586,23 +617,31 @@ namespace Air3550
                 Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
                 nads = Console.ReadLine();
             }
+
             SqlDateTime sqlnad = new SqlDateTime(nad.Year, nad.Month, nad.Day, nad.Hour, nad.Minute, nad.Second);
-            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
-            {
-                // first get the flight ID for that flight
-                sqlConn.Open();
-                string queryString = $"INSERT INTO Flights (FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime)" +
-                    $"VALUES ({nfn}, \'{noa}\', \'{nda}\', {np}, \'{sqlndd}\', \'{sqlnad}\')";
-                SqlCommand query = new SqlCommand(queryString, sqlConn);
-                int rows = query.ExecuteNonQuery();
-                if(rows > 0)
+          
+                DateTime endDate = DateTime.Now.AddMonths(7);
+                DateTime departureDate = ndd;
+                while (departureDate <= endDate)
                 {
-                    Console.WriteLine("Successfully added the flight!");
+                    departureDate = departureDate.AddDays(7);
+
+                    SqlDateTime sqlDepartureDate = new SqlDateTime(departureDate.Year, departureDate.Month, departureDate.Day, departureDate.Hour, departureDate.Minute, departureDate.Second);
+                    SqlDateTime sqlArrivalDate = new SqlDateTime(departureDate.Year, departureDate.Month, departureDate.Day, nad.Hour, nad.Minute, nad.Second);
+
+                    string queryString = $"INSERT INTO Flights (FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime)" +
+                    $"VALUES ({nfn}, \'{noa}\', \'{nda}\', {np}, \'{sqlDepartureDate}\', \'{sqlArrivalDate}\')";               
+                using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+                { 
+                        sqlConn.Open();
+                        SqlCommand query = new SqlCommand(queryString, sqlConn);
+                        int rows = query.ExecuteNonQuery();
+                        sqlConn.Close();
+                    }             
                 }
-                sqlConn.Close();
-            }
-            return;
+                Console.WriteLine("Flights added for the next 6 months!");                  
         }
+
         public void DeleteFlight()
         {
             bool flightID = false;
