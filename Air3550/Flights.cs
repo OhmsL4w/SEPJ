@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
@@ -63,7 +64,7 @@ namespace Air3550
                         Console.WriteLine($"FlightID:{reader.GetInt32(0)}  FlightNumber: {reader.GetInt32(1)}  Origin Airport: {reader.GetString(2)}  Destination Aiport: {reader.GetString(3)}  Price: {reader.GetDecimal(4)}  Departure Date: {reader.GetDateTime(5).ToString("d")}  Departure Time: {reader.GetDateTime(5).ToString("T")}  Arrival Date: {reader.GetDateTime(6).ToString("d")}  Arrival Time: {reader.GetDateTime(6).ToString("T")}");
                     }
                 }
-                while(true)
+                while (true)
                 {
                     Console.WriteLine("Input an option to continue");
                     Console.WriteLine("1. Update Flight");
@@ -88,7 +89,7 @@ namespace Air3550
                             DeleteFlight();
                             break;
                         case "Q":
-                            sqlConn.Close();                       
+                            sqlConn.Close();
                             return;
                     }
                 }
@@ -97,7 +98,7 @@ namespace Air3550
         public void UpdateFlight()
         {
             bool flightID = false;
-            while(true)
+            while (true)
             {
                 Console.WriteLine("Would you like to update a single flight, or all flights with a flight number?");
                 Console.WriteLine("1. Single Flight (Flight ID)");
@@ -117,7 +118,7 @@ namespace Air3550
             {
                 Console.WriteLine("Input a Flight ID");
                 string? flight = Console.ReadLine();
-                while(flight == null)
+                while (flight == null)
                 {
                     Console.WriteLine("Please input a Flight ID");
                     flight = Console.ReadLine();
@@ -157,7 +158,7 @@ namespace Air3550
                                 Console.WriteLine("Input a new Flight Number");
                                 string? nfns = Console.ReadLine();
                                 int nfn;
-                                while(true)
+                                while (true)
                                 {
                                     if (!int.TryParse(nfns, out nfn))
                                     {
@@ -185,7 +186,7 @@ namespace Air3550
                                 while (noa == null | noa?.Length != 3)
                                 {
                                     Console.WriteLine("Input a correct airport code please");
-                                
+
                                     Console.WriteLine("Input a new Airport Code");
                                     noa = Console.ReadLine();
                                 }
@@ -301,7 +302,8 @@ namespace Air3550
                         }
                     }
                 }
-            }else
+            }
+            else
             {
                 Console.WriteLine("Input a Flight Number");
                 string? flight = Console.ReadLine();
@@ -511,7 +513,7 @@ namespace Air3550
                 Console.WriteLine("Input a new Flight Number");
                 nfns = Console.ReadLine();
             }
-            
+
             Console.WriteLine("Input a new Origin Airport");
             string? noa = Console.ReadLine();
             while (noa == null | noa?.Length != 3)
@@ -521,7 +523,7 @@ namespace Air3550
                 Console.WriteLine("Input a new Airport Code");
                 noa = Console.ReadLine();
             }
-            
+
             Console.WriteLine("Input a new Destination Airport");
             string? nda = Console.ReadLine();
             while (nda == null | nda?.Length != 3)
@@ -531,7 +533,7 @@ namespace Air3550
                 Console.WriteLine("Input a new Airport Code");
                 nda = Console.ReadLine();
             }
-            
+
             Console.WriteLine("Input a new Price (xx.xx)");
             string? nps = Console.ReadLine();
             decimal np;
@@ -549,7 +551,7 @@ namespace Air3550
                 Console.WriteLine("Input a new Price (xx.xx)");
                 nps = Console.ReadLine();
             }
-            
+
             Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
             string? ndds = Console.ReadLine();
             DateTime ndd;
@@ -568,7 +570,7 @@ namespace Air3550
                 ndds = Console.ReadLine();
             }
             SqlDateTime sqlndd = new SqlDateTime(ndd.Year, ndd.Month, ndd.Day, ndd.Hour, ndd.Minute, ndd.Second);
-            
+
             Console.WriteLine("Input a new Arrival Date and Time (mm/dd/yyyy HH:MM:SS)");
             string? nads = Console.ReadLine();
             DateTime nad;
@@ -595,7 +597,7 @@ namespace Air3550
                     $"VALUES ({nfn}, \'{noa}\', \'{nda}\', {np}, \'{sqlndd}\', \'{sqlnad}\')";
                 SqlCommand query = new SqlCommand(queryString, sqlConn);
                 int rows = query.ExecuteNonQuery();
-                if(rows > 0)
+                if (rows > 0)
                 {
                     Console.WriteLine("Successfully added the flight!");
                 }
@@ -644,7 +646,8 @@ namespace Air3550
                     }
                     sqlConn.Close();
                 }
-            }else
+            }
+            else
             {
                 Console.WriteLine("Input a Flight Number");
                 string? flight = Console.ReadLine();
@@ -666,6 +669,101 @@ namespace Air3550
                     }
                     sqlConn.Close();
                 }
+            }
+        }
+        public void BookFlight()
+        {
+            string? OriginAirport, DestinationAirport, DDate, ADate, checkFlightDets;
+
+            do
+            {
+                Console.WriteLine("Please enter an Origin Airport");
+                OriginAirport = Console.ReadLine();
+            } while (OriginAirport == null);
+            do
+            {
+                Console.WriteLine("Please enter a Destination Airport");
+                DestinationAirport = Console.ReadLine();
+            } while (DestinationAirport == null);
+            DateTime DepartDate;
+
+            do
+            {
+                Console.WriteLine("Please enter a Departure Date mm/dd/yyyy");
+                DDate = Console.ReadLine();
+
+                if (!DateTime.TryParse(DDate, out  DepartDate))
+                {
+                    Console.WriteLine("Invalid date format. Please enter a valid date in mm/dd/yyyy format.");
+                    continue;
+                }
+
+                if (DepartDate < DateTime.Today)
+                {
+                    Console.WriteLine("Departure date cannot be in the past. Please enter a future date.");
+                    continue;
+                }
+                break;
+
+            } while (true);
+
+            DateTime ArriveDate;
+            do
+            {
+                Console.WriteLine("Please enter an Arrival Date mm/dd/yyyy");
+                ADate = Console.ReadLine();
+
+                if (!DateTime.TryParse(ADate, out  ArriveDate))
+                {
+                    Console.WriteLine("Invalid date format. Please enter a valid date in mm/dd/yyyy format.");
+                    continue;
+                }
+
+                if (ArriveDate < DateTime.Today)
+                {
+                    Console.WriteLine("Arrival date cannot be in the past. Please enter a future date.");
+                    continue;
+                }
+                break;
+
+            } while (true);
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
+
+                //checking if we have a flight that the user is requesting 
+                // checkFlightDets = $"SELECT * FROM Flights WHERE OriginCity = @OriginCity AND DestinationCity = @DestinationCity ";//AND DepartureDateTime = @DepartureDate AND ArrivalDateTime = @ArrivalDate";
+                checkFlightDets = $"SELECT * FROM Flights WHERE OriginCity = @OriginCity AND DestinationCity = @DestinationCity AND CONVERT(date, DepartureDateTime) = CONVERT(date, @DepartureDate) AND CONVERT(date, ArrivalDateTime) = CONVERT(date, @ArrivalDate)";
+                using (SqlCommand FlightDets = new SqlCommand(checkFlightDets, sqlConn))
+                {
+                    FlightDets.Parameters.AddWithValue("@OriginCity", OriginAirport);
+                    FlightDets.Parameters.AddWithValue("@DestinationCity", DestinationAirport);
+                    FlightDets.Parameters.AddWithValue("@DepartureDate", DepartDate);
+                    FlightDets.Parameters.AddWithValue("@ArrivalDate", ArriveDate);
+
+                    sqlConn.Open();
+                    SqlDataReader reader = FlightDets.ExecuteReader();
+
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            // Retrieve the flight information from the reader                            
+                            string OrgCity = (string)reader["OriginCity"];
+                            string DesCity = (string)reader["DestinationCity"];
+                            DateTime DepartDets = reader.GetDateTime(reader.GetOrdinal("DepartureDateTime"));
+                            DateTime AriveDets = reader.GetDateTime(reader.GetOrdinal("ArrivalDateTime"));
+                            Console.WriteLine($"Flight found from {OrgCity} at {DepartDets.ToString()} to {DesCity} at {AriveDets.ToString()} ");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No flights found for the specified Airports or dates.");
+                    }
+                    sqlConn.Close();
+                    reader.Close();
+                }
+
+
             }
         }
     }

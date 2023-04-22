@@ -204,9 +204,7 @@ public class Login
         string? password, PNumber, Address, CCard, queryStringUpdate;
         int rows;
 
-        //string queryStringInsert = $"INSERT INTO Users (UserID, IsManager, IsEngineer, Password, FirstName, LastName, Address, PointsAvailable, Phone, Birthday, PointsUsed) " +
-        //  $"VALUES ({userID}, 0, 0, \'{hashedPassword}\', \'{firstName}\', \'{lastName}\', \'{address}\', 0, \'{phone}\', \'{sqlBdayDateTime}\', 0)";
-        // open the database
+         // open the database
         // "jdbc:sqlserver://localhost;integratedSecurity=true;encrypt=false"
         using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
         {
