@@ -485,7 +485,7 @@ namespace Air3550
                                 rows = q.ExecuteNonQuery();
                                 if (rows > 0)
                                 {
-                                    Console.WriteLine($"Successfully updated flight: {flight}");
+                                    Console.WriteLine($"Successfully updated flight: {flight}\n");
                                 }
                                 break;
                             case "6":
@@ -512,7 +512,7 @@ namespace Air3550
                                 rows = q.ExecuteNonQuery();
                                 if (rows > 0)
                                 {
-                                    Console.WriteLine($"Successfully updated flight: {flight}");
+                                    Console.WriteLine($"Successfully updated flight: {flight}\n");
                                 }
                                 break;
                             case "Q":
@@ -638,7 +638,7 @@ namespace Air3550
                     }  
                 sqlConn.Close();
                 }
-                Console.WriteLine("Flights added for the next 6 months!");                  
+                Console.WriteLine("Flights added for the next 6 months!\n");                  
         }
 
         public void DeleteFlight()
@@ -685,11 +685,10 @@ namespace Air3550
                     int rows = query.ExecuteNonQuery();
                     if (rows > 0)
                     {
-                        Console.WriteLine("Successfully deleted the flight!");
+                        Console.WriteLine("Successfully deleted the flight!\n");
                     }                  
                     sqlConn.Close();
                 }
-
             }else
             {
                 Console.WriteLine("Input a Flight Number");
@@ -709,7 +708,7 @@ namespace Air3550
                     int rows = query.ExecuteNonQuery();
                     if (rows > 0)
                     {
-                        Console.WriteLine($"Successfully deleted the flight! Deleted: {rows}");
+                        Console.WriteLine($"Successfully deleted the flight! Deleted: {rows}\n");
                     }                 
                     sqlConn.Close();
                 }
