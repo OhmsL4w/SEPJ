@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -622,7 +623,7 @@ namespace Air3550
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
                 { 
                         sqlConn.Open();
-                DateTime endDate = DateTime.Now.AddMonths(7);
+                DateTime endDate = DateTime.Now.AddMonths(1);
                 DateTime departureDate = ndd;
                 while (departureDate <= endDate)
                 {
@@ -673,43 +674,55 @@ namespace Air3550
                 {
                     // first get the flight ID for that flight
                     sqlConn.Open();
-                    // Get the flight number for that flight
-                    string getFlightNumberQueryString = $"SELECT FlightNumber FROM Flights WHERE FlightID = {flight}";
-                    SqlCommand getFlightNumberQuery = new SqlCommand(getFlightNumberQueryString, sqlConn);
-                    string flightNumber = getFlightNumberQuery.ExecuteScalar().ToString();
-                    // Refund the flight
-                    RefundFlight(flightNumber);
-
+                    RefundFlight(flight);
                     string queryString = $"DELETE Flights WHERE FlightID = {flight}";
                     SqlCommand query = new SqlCommand(queryString, sqlConn);                  
                     int rows = query.ExecuteNonQuery();
                     if (rows > 0)
                     {
                         Console.WriteLine("Successfully deleted the flight!\n");
-                    }                  
+                    }                     
                     sqlConn.Close();
                 }
             }else
             {
                 Console.WriteLine("Input a Flight Number");
-                string? flight = Console.ReadLine();
-                while (flight == null)
+                string? flightNumber = Console.ReadLine();
+                while (flightNumber == null)
                 {
                     Console.WriteLine("Please input a Flight Number");
-                    flight = Console.ReadLine();
+                    flightNumber = Console.ReadLine();
                 }
+
                 using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
                 {
-                    // first get the flight ID for that flight
+                    // get all flight IDs for that flight number
                     sqlConn.Open();
-                    string queryString = $"DELETE Flights WHERE FlightNumber = {flight}";
-                    RefundFlight(flight);
-                    SqlCommand query = new SqlCommand(queryString, sqlConn);                  
+                    string queryString = $"SELECT FlightID FROM Flights WHERE FlightNumber = {flightNumber}";
+                    SqlCommand query = new SqlCommand(queryString, sqlConn);
+                    SqlDataReader reader = query.ExecuteReader();
+                    List<string> flightIDs = new List<string>();
+                    while (reader.Read())
+                    {
+                       flightIDs.Add(reader.GetValue(0).ToString());
+                    }
+                    reader.Close();
+
+                    // delete all flights with that flight number
+                    //queryString = $"DELETE Flights WHERE FlightNumber = {flightNumber}";
+                    query = new SqlCommand(queryString, sqlConn);
                     int rows = query.ExecuteNonQuery();
                     if (rows > 0)
                     {
-                        Console.WriteLine($"Successfully deleted the flight! Deleted: {rows}\n");
-                    }                 
+                        Console.WriteLine($"Successfully deleted {rows} flights with flight number {flightNumber}!\n");
+                    }
+
+                    // call RefundFlight() on all flight IDs for that flight number
+                    foreach (string flightiD in flightIDs)
+                    {
+                        RefundFlight(flightiD);
+                    }
+
                     sqlConn.Close();
                 }
             }
@@ -728,7 +741,7 @@ namespace Air3550
                 if (transactionReader.Read())
                 {
                     userID = (int)transactionReader["UserID"];
-                    paymentAmount = (decimal)transactionReader["AmountCharged"];
+                    paymentAmount = (int)transactionReader["AmountCharged"];
                 }
                 transactionReader.Close();
                 if (userID != -1 && paymentAmount != -1)
@@ -737,11 +750,11 @@ namespace Air3550
                     string refundQueryString = $"UPDATE Users SET CreditCard = CreditCard + {paymentAmount} WHERE UserID = {userID}";
                     SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
                     refundQuery.ExecuteNonQuery();                   
-                    Console.WriteLine($"Flight {flightID} has been deleted and a refund of ${paymentAmount} has been issued to user {userID}");
+                    Console.WriteLine($"Flight {flightID} has been deleted and a refund of ${paymentAmount} has been issued to user {userID}\n");
                 }
                 else
                 {
-                    Console.WriteLine($"No transaction found for flight {flightID}");
+                    Console.WriteLine($"No transaction found for flight {flightID}\n");
                 }
                 sqlConn.Close();
             }
