@@ -83,7 +83,7 @@ namespace Air3550
                 switch (input)
                 {
                     case "1":
-                        flight.BookFlight();
+                        flight.BookFlight(CurUser.UserID);
                         break;
                     case "Q":
                         return;

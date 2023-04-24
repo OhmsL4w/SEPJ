@@ -297,7 +297,7 @@ public class Login
                     {
                         Console.WriteLine("Enter new Credit Card");
                         CCard = Console.ReadLine();
-                    } while (CCard == null);
+                    } while (CCard == null || CCard.Length != 16);
                     queryStringUpdate = $"UPDATE Users SET CreditCard = @CreditCard WHERE Users.UserID = @UserId";
                     using (SqlCommand queryUpdateCC = new SqlCommand(queryStringUpdate, sqlConn))
                     {

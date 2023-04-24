@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,7 +49,6 @@ namespace Air3550
                 sqlConn.Close();
             }
         }
-
         public void ManageFlights()
         {
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
@@ -671,10 +671,11 @@ namespace Air3550
                 }
             }
         }
-        public void BookFlight()
+        public void BookFlight(string username)
         {
-            string? OriginAirport, DestinationAirport, DDate, ADate, checkFlightDets;
-
+            string? OriginAirport, DestinationAirport, DDate, ADate, checkFlightDets, paymentMethod, checkPaymentDets,CCardUpdate, CCard = null,newCCard;
+            
+            int rows = 0, YOrN = 0 , addPoints = 0;
             do
             {
                 Console.WriteLine("Please enter an Origin Airport");
@@ -729,42 +730,242 @@ namespace Air3550
             } while (true);
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
-
+                string OrgCity = null;
+                string DesCity = null;
+                int flightID = 0 ;
+                //string tempPrice;
+                DateTime DepartDets = default(DateTime);
+                DateTime AriveDets = default(DateTime);
+                decimal price = 0;
                 //checking if we have a flight that the user is requesting 
                 // checkFlightDets = $"SELECT * FROM Flights WHERE OriginCity = @OriginCity AND DestinationCity = @DestinationCity ";//AND DepartureDateTime = @DepartureDate AND ArrivalDateTime = @ArrivalDate";
                 checkFlightDets = $"SELECT * FROM Flights WHERE OriginCity = @OriginCity AND DestinationCity = @DestinationCity AND CONVERT(date, DepartureDateTime) = CONVERT(date, @DepartureDate) AND CONVERT(date, ArrivalDateTime) = CONVERT(date, @ArrivalDate)";
+                sqlConn.Open();
                 using (SqlCommand FlightDets = new SqlCommand(checkFlightDets, sqlConn))
                 {
                     FlightDets.Parameters.AddWithValue("@OriginCity", OriginAirport);
                     FlightDets.Parameters.AddWithValue("@DestinationCity", DestinationAirport);
                     FlightDets.Parameters.AddWithValue("@DepartureDate", DepartDate);
                     FlightDets.Parameters.AddWithValue("@ArrivalDate", ArriveDate);
-
-                    sqlConn.Open();
+                    
                     SqlDataReader reader = FlightDets.ExecuteReader();
 
                     if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
-                            // Retrieve the flight information from the reader                            
-                            string OrgCity = (string)reader["OriginCity"];
-                            string DesCity = (string)reader["DestinationCity"];
-                            DateTime DepartDets = reader.GetDateTime(reader.GetOrdinal("DepartureDateTime"));
-                            DateTime AriveDets = reader.GetDateTime(reader.GetOrdinal("ArrivalDateTime"));
-                            Console.WriteLine($"Flight found from {OrgCity} at {DepartDets.ToString()} to {DesCity} at {AriveDets.ToString()} ");
+                            // Retrieve the flight information from the reader
+                            
+                            OrgCity = (string)reader["OriginCity"];
+                            DesCity = (string)reader["DestinationCity"];
+                            DepartDets = reader.GetDateTime(reader.GetOrdinal("DepartureDateTime"));
+                            AriveDets = reader.GetDateTime(reader.GetOrdinal("ArrivalDateTime"));
+                            flightID = (int)reader["FlightID"];
+                            price = (decimal)reader["Price"];
+                            //Double.TryParse(price, out price);
+                            Console.WriteLine($"Flight found from {OrgCity} at {DepartDets.ToString()} to {DesCity} at {AriveDets.ToString()} at Price: ${price}");
+                        }
+                        reader.Close();
+                        addPoints = (int)price * 100;
+                        do
+                        {
+                            Console.WriteLine("Please select a Payment Method\n1. Credit Card\n2. Points");
+                            paymentMethod = Console.ReadLine();
+                        } while (paymentMethod == null | (paymentMethod != "1" & paymentMethod != "2"));
+
+                        checkPaymentDets = $"SELECT * FROM Users WHERE UserID = @UserId"; // Need this to check if the user had a credit card on file or not 
+                        using (SqlCommand PointsPayment = new SqlCommand(checkPaymentDets, sqlConn))
+                        {
+                            PointsPayment.Parameters.AddWithValue("@UserID", username);
+
+                            using (SqlDataReader paymenreader = PointsPayment.ExecuteReader())
+                            {
+                                paymenreader.Read();
+                                if (paymenreader.HasRows)
+                                {
+                                    bool notEnoughPoints = false;
+                                    if (paymentMethod == "2")
+                                    {
+
+                                        int points = (int)paymenreader["PointsAvailable"];
+                                        int priceInPoints = (int)price * 100;
+                                        if (points >= priceInPoints)
+                                        {
+                                            paymenreader.Close();
+                                           Console.WriteLine("You have Enough points");
+
+                                           string? usingPoints = $"UPDATE Users SET PointsAvailable = PointsAvailable - @pointsToReduce,PointsUsed = PointsUsed + @pointsToAdd WHERE UserID = @UserId";
+                                            using (SqlCommand updatePoints = new SqlCommand(usingPoints, sqlConn))
+                                            {
+                                                updatePoints.Parameters.AddWithValue("@pointsToReduce", priceInPoints);
+                                                updatePoints.Parameters.AddWithValue("@pointsToAdd", priceInPoints);
+                                                updatePoints.Parameters.AddWithValue("@UserId", username);
+                                                rows = updatePoints.ExecuteNonQuery();
+                                                if (rows > 0)
+                                                {
+                                                    Console.WriteLine("Successfully updated points");
+                                                }
+                                                else
+                                                {
+                                                    Console.WriteLine("Unsuccessful point update.");
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            notEnoughPoints = true;
+                                            Console.WriteLine("Insufficient points please use a credit card");
+                                        }
+
+                                    }
+                                    if (notEnoughPoints == true)
+                                    {
+                                        
+                                        CCard = paymenreader.IsDBNull(paymenreader.GetOrdinal("CreditCard")) ? null : (string)paymenreader["CreditCard"];
+                                        string CCsave = null;
+                                        if (CCard != null)
+                                        {
+
+                                            Console.WriteLine("Would you like to use the Card you have saved for your account?\n1.Y\n2.N");
+                                            CCsave = Console.ReadLine();
+                                            do
+                                            {
+                                                if (CCsave == "2")
+                                                {
+                                                    //ask user for new card and see if they want to save it to their account
+                                                    do
+                                                    {
+                                                        Console.WriteLine("Enter new Credit Card");
+                                                        newCCard = Console.ReadLine();
+                                                    } while (newCCard == null || newCCard.Length != 16);
+                                                }
+                                                else break;
+                                            } while (CCsave == null || CCsave != "1" || CCsave != "2");
+                                        }
+                                        else
+                                        {
+                                            //ask user for new credit card number
+                                            Console.WriteLine("You do not have a credit card saved in your account");
+                                            do
+                                            {
+                                                Console.WriteLine("Enter new Credit Card");
+                                                newCCard = Console.ReadLine();
+                                            } while (newCCard == null || newCCard.Length != 16);
+                                            Console.WriteLine("Would you like to save this Card to your account?\n1.Y\n2.N");
+                                            CCsave = Console.ReadLine();
+                                            if (CCsave == "1")
+                                            {
+                                                paymenreader.Close();
+                                                CCardUpdate = $"UPDATE Users SET CreditCard = @CreditCard WHERE UserID = @UserId";
+                                                using (SqlCommand queryUpdateCC = new SqlCommand(CCardUpdate, sqlConn))
+                                                {
+                                                    queryUpdateCC.Parameters.AddWithValue("@CreditCard", newCCard);
+                                                    queryUpdateCC.Parameters.AddWithValue("@UserId", username);
+                                                    rows = queryUpdateCC.ExecuteNonQuery();
+                                                    if (rows > 0)
+                                                    {
+                                                        Console.WriteLine("Successfully changed Credit Card");
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.WriteLine("Unsuccessful Credit Card change.");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        //show reciept
+                                        paymenreader.Close();
+                                        
+                                        string pointUpdate = $"UPDATE Users SET PointsAvailable = PointsAvailable + @Points WHERE UserID = @UserId";
+                                        using (SqlCommand queryUpdatePoints = new SqlCommand(pointUpdate, sqlConn))
+                                        {
+                                            queryUpdatePoints.Parameters.AddWithValue("@Points", addPoints);
+                                            queryUpdatePoints.Parameters.AddWithValue("@UserId", username);
+                                            rows = queryUpdatePoints.ExecuteNonQuery();
+                                            if (rows > 0)
+                                            {
+                                                Console.WriteLine("Successfully added points");
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("couldn't add points");
+                                            }
+                                        }
+                                        string Transac = $"INSERT INTO Transactions (AmountCharged, IsCard, UserID, FlightID, IsComplete) VALUES ( @AmountCharged, @IsCard, @UserId, @FlightID, @IsComplete)";
+                                        using (SqlCommand addTransaction = new SqlCommand(Transac, sqlConn))
+                                        {
+                                            addTransaction.Parameters.AddWithValue("@AmountCharged", price);
+                                            if (paymentMethod == "2") YOrN = 0;
+                                            else YOrN = 1;
+                                            addTransaction.Parameters.AddWithValue("@IsCard", YOrN);
+                                            addTransaction.Parameters.AddWithValue("@UserId", username);
+                                            addTransaction.Parameters.AddWithValue("@FlightID", flightID);
+                                            addTransaction.Parameters.AddWithValue("@IsComplete", 1);
+
+                                            rows = addTransaction.ExecuteNonQuery();
+                                            if (rows > 0)
+                                            {
+                                                Console.WriteLine("Successfully added Transaction");
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("couldn't add transaction");
+                                            }
+                                        }
+                                    }
+                                    string forReciept = $"SELECT * FROM Users WHERE UserID = @UserID";
+                                    using (SqlCommand Reciept = new SqlCommand(forReciept, sqlConn))
+                                    {
+
+                                        Reciept.Parameters.AddWithValue("@UserId", username);
+
+                                        using (SqlDataReader recieptmaker = Reciept.ExecuteReader())
+                                        {
+                                            if (rows > 0)
+                                            {
+                                                Console.WriteLine("Here is your Reciept");
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("couldn't find user"); //bad case where system glitches
+                                            }
+                                            recieptmaker.Read();
+                                            int pointsAvial = (int)recieptmaker["PointsAvailable"];
+                                            int pointsUsed = (int)recieptmaker["PointsUsed"];
+                                            string name = (string)recieptmaker["FirstName"];
+                                            name = name + " " +(string)recieptmaker["LastName"];
+                                            //need to add logic for if credit card was used or not 
+                                            Console.WriteLine($"Flight booked from {OrgCity} at {DepartDets.ToString()} to {DesCity} at {AriveDets.ToString()} at Price: ${price}");
+                                            if(paymentMethod == "1" || notEnoughPoints == true)
+                                            {
+                                                Console.WriteLine($"The Payment Method Used was Credit Card: {CCard}");
+                                                Console.WriteLine($"Points rewarded for the booking: {addPoints}, Total points in Account:{pointsAvial}");
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine($"The Payment Method Used was Points. Price of the Flight in points {addPoints}, Total points after purchase in Account {pointsAvial}, Total points used {pointsUsed}");
+                                            }
+                                            Console.WriteLine($"Thank You for booking with us {name}. ");
+
+                                            recieptmaker.Close();
+                                        }   
+                                    }
+
+                                }
+                            }
                         }
                     }
                     else
                     {
                         Console.WriteLine("No flights found for the specified Airports or dates.");
                     }
-                    sqlConn.Close();
-                    reader.Close();
+                    
+                    
                 }
-
-
+                
+                sqlConn.Close();
             }
+            return;
         }
     }
 }
