@@ -609,6 +609,10 @@ namespace Air3550
                     Console.WriteLine("Could not parse the date and time!");
                     Console.WriteLine("Input a correct Date and time in the format given no parenthesis please");
                 }
+                else if(nad < ndd)
+                {
+                    Console.WriteLine("You have to input an arrival time after the departure date!");
+                }
                 else
                 {
                     break;
@@ -742,6 +746,10 @@ namespace Air3550
                         {
                             Console.WriteLine("Could not parse the date and time!");
                             Console.WriteLine("Input a correct Date and time in the format given no paranthesis please");
+                        }
+                        else if((conDeptDate - conArrDate).TotalMinutes < 40)
+                        {
+                            Console.WriteLine("Connecting flights must at least be 40 minutes after arrival of the first flight!");
                         }
                         else
                         {
