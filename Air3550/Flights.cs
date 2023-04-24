@@ -675,7 +675,7 @@ namespace Air3550
         {
             string? OriginAirport, DestinationAirport, DDate, ADate, checkFlightDets, paymentMethod, checkPaymentDets,CCardUpdate, CCard = null,newCCard;
             
-            int rows = 0, YOrN = 0 , addPoints = 0;
+            int rows = 0, isCard = 0 , addPoints = 0;
             do
             {
                 Console.WriteLine("Please enter an Origin Airport");
@@ -891,26 +891,33 @@ namespace Air3550
                                                 Console.WriteLine("couldn't add points");
                                             }
                                         }
-                                        string Transac = $"INSERT INTO Transactions (AmountCharged, IsCard, UserID, FlightID, IsComplete) VALUES ( @AmountCharged, @IsCard, @UserId, @FlightID, @IsComplete)";
-                                        using (SqlCommand addTransaction = new SqlCommand(Transac, sqlConn))
-                                        {
-                                            addTransaction.Parameters.AddWithValue("@AmountCharged", price);
-                                            if (paymentMethod == "2") YOrN = 0;
-                                            else YOrN = 1;
-                                            addTransaction.Parameters.AddWithValue("@IsCard", YOrN);
-                                            addTransaction.Parameters.AddWithValue("@UserId", username);
-                                            addTransaction.Parameters.AddWithValue("@FlightID", flightID);
-                                            addTransaction.Parameters.AddWithValue("@IsComplete", 1);
 
-                                            rows = addTransaction.ExecuteNonQuery();
-                                            if (rows > 0)
-                                            {
-                                                Console.WriteLine("Successfully added Transaction");
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("couldn't add transaction");
-                                            }
+                                    }
+                                    string Transac = $"INSERT INTO Transactions (AmountCharged, IsCard, UserID, FlightID, IsComplete) VALUES ( @AmountCharged, @IsCard, @UserId, @FlightID, @IsComplete)";
+                                    using (SqlCommand addTransaction = new SqlCommand(Transac, sqlConn))
+                                    {
+                                        addTransaction.Parameters.AddWithValue("@AmountCharged", price);
+                                        if (paymentMethod == "1" || notEnoughPoints == true)
+                                        {
+                                            isCard = 1;
+                                        }
+                                        else
+                                        {
+                                            isCard = 0;
+                                        }
+                                        addTransaction.Parameters.AddWithValue("@IsCard", isCard);
+                                        addTransaction.Parameters.AddWithValue("@UserId", username);
+                                        addTransaction.Parameters.AddWithValue("@FlightID", flightID);
+                                        addTransaction.Parameters.AddWithValue("@IsComplete", 1);
+
+                                        rows = addTransaction.ExecuteNonQuery();
+                                        if (rows > 0)
+                                        {
+                                            Console.WriteLine("Successfully added Transaction");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("couldn't add transaction");
                                         }
                                     }
                                     string forReciept = $"SELECT * FROM Users WHERE UserID = @UserID";
