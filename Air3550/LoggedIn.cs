@@ -93,7 +93,7 @@ namespace Air3550
                         Login.DisplayFlightHistory(CurUser.UserID);
                         break;
                     case "4":
-                        //Flights.CancelFlights();
+                        Flights.cancel();
                         break;
                     case "M":
                         if(CurUser.IsManager) 
