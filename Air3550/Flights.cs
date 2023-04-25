@@ -687,7 +687,6 @@ namespace Air3550
                     reader.Close();
                     sqlConn.Close();
 
-                    // then call the RefundFlight function with the FlightID and IsCard values
                     RefundFlight(flight, isCard);
 
                     sqlConn.Open();
@@ -733,7 +732,6 @@ namespace Air3550
                     {
                         Console.WriteLine($"Successfully deleted {rows} flights with flight number {flightNumber}!\n");
                     }
-
                     // call Refund(string FlightID, bool IsCard) on all flight IDs for that flight number
                     foreach (string flightiD in flightIDs)
                     {
@@ -747,53 +745,58 @@ namespace Air3550
                             isCard = reader.GetBoolean(0);
                         }
                         reader.Close();
-
-                        // call Refund(string FlightID, bool IsCard)
                         RefundFlight(flightiD, isCard);
                     }
-
                     sqlConn.Close();
                 }
             }
         }
-
         public static void RefundFlight(string flightID, bool isCard)
         {
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
                 sqlConn.Open();
                 // Get the user ID and payment amount for the transaction associated with this flight
-                string transactionQueryString = $"SELECT UserID, AmountCharged FROM Transactions WHERE FlightID = {flightID}";
+                string transactionQueryString = $"SELECT UserID, AmountCharged, IsRefunded FROM Transactions WHERE FlightID = {flightID}";
                 SqlCommand transactionQuery = new SqlCommand(transactionQueryString, sqlConn);
                 SqlDataReader transactionReader = transactionQuery.ExecuteReader();
                 int userID = -1;
                 decimal paymentAmount = -1;
+                bool? isRefunded = null;
                 if (transactionReader.Read())
                 {
                     userID = (int)transactionReader["UserID"];
                     paymentAmount = (int)transactionReader["AmountCharged"];
+                    if (!transactionReader.IsDBNull(transactionReader.GetOrdinal("IsRefunded")))
+                    {
+                        isRefunded = (bool)transactionReader["IsRefunded"];
+                    }
                 }
                 transactionReader.Close();
-                if (userID != -1 && paymentAmount != -1)
+                if (userID != -1 && paymentAmount != -1 && isRefunded != true)
                 {
                     // Refund the payment to the user
                     if (isCard)
                     {
                         string refundQueryString = $"UPDATE Users SET CreditCard = 'CreditCard' + '{paymentAmount}' WHERE UserID = {userID}";
-                        string updateString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightID}' AND UserID = '{userID}'";
-                        SqlCommand update = new SqlCommand(updateString, sqlConn);
-                        update.ExecuteNonQuery(); SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
+                        SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
                         refundQuery.ExecuteNonQuery();
                     }
                     else
                     {
-                        string refundQueryString = $"UPDATE Users SET PointsAvailable = PointsAvailable + {paymentAmount} WHERE UserID = {userID}";
-                        string updateString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightID}' AND UserID = '{userID}'";
-                        SqlCommand update = new SqlCommand(updateString, sqlConn);
-                        update.ExecuteNonQuery(); SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
+                        string refundQueryString = $"UPDATE Users SET PointsAvailable = PointsAvailable + {paymentAmount} WHERE UserID = {userID}";                       
+                        SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
                         refundQuery.ExecuteNonQuery();
                     }
-                    Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {userID} \n");
+                    // Mark the transaction as refunded
+                    string markAsRefundedQueryString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightID}' AND UserID = '{userID}'";
+                    SqlCommand markAsRefundedQuery = new SqlCommand(markAsRefundedQueryString, sqlConn);
+                    markAsRefundedQuery.ExecuteNonQuery();
+                    Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {userID}\n");
+                }
+                else if (isRefunded == true)
+                {
+                    Console.WriteLine($"The transaction associated with flight {flightID} has already been canceled and refunded.\n");
                 }
                 else
                 {
@@ -843,7 +846,6 @@ namespace Air3550
                         update.ExecuteNonQuery();
                         sqlConn.Close();
                     }
-                    Console.WriteLine("Flight cancelled and refunded successfully.");
             }
             else
             {
