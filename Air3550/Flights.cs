@@ -787,9 +787,8 @@ namespace Air3550
                                     if (paymentMethod == "2")
                                     {
 
-                                        int points = (int)paymenreader["PointsAvailable"];
-                                        int priceInPoints = (int)price * 100;
-                                        if (points >= priceInPoints)
+                                        int points = (int)paymenreader["PointsAvailable"];                                       
+                                        if (points >= addPoints)
                                         {
                                             paymenreader.Close();
                                            Console.WriteLine("You have Enough points");
@@ -797,8 +796,8 @@ namespace Air3550
                                            string? usingPoints = $"UPDATE Users SET PointsAvailable = PointsAvailable - @pointsToReduce,PointsUsed = PointsUsed + @pointsToAdd WHERE UserID = @UserId";
                                             using (SqlCommand updatePoints = new SqlCommand(usingPoints, sqlConn))
                                             {
-                                                updatePoints.Parameters.AddWithValue("@pointsToReduce", priceInPoints);
-                                                updatePoints.Parameters.AddWithValue("@pointsToAdd", priceInPoints);
+                                                updatePoints.Parameters.AddWithValue("@pointsToReduce", addPoints);
+                                                updatePoints.Parameters.AddWithValue("@pointsToAdd", addPoints);
                                                 updatePoints.Parameters.AddWithValue("@UserId", username);
                                                 rows = updatePoints.ExecuteNonQuery();
                                                 if (rows > 0)
@@ -820,7 +819,7 @@ namespace Air3550
                                     }
                                     if (notEnoughPoints == true)
                                     {
-                                        
+
                                         CCard = paymenreader.IsDBNull(paymenreader.GetOrdinal("CreditCard")) ? null : (string)paymenreader["CreditCard"];
                                         string CCsave = null;
                                         if (CCard != null)
@@ -893,7 +892,7 @@ namespace Air3550
                                         }
 
                                     }
-                                    string Transac = $"INSERT INTO Transactions (AmountCharged, IsCard, UserID, FlightID, IsComplete) VALUES ( @AmountCharged, @IsCard, @UserId, @FlightID, @IsComplete)";
+                                    string Transac = $"INSERT INTO Transactions (AmountCharged, IsCard, UserID, FlightID, IsComplete) VALUES ( @AmountCharged, @IsCard, @UserId, @FlightID)";
                                     using (SqlCommand addTransaction = new SqlCommand(Transac, sqlConn))
                                     {
                                         addTransaction.Parameters.AddWithValue("@AmountCharged", price);
@@ -908,8 +907,7 @@ namespace Air3550
                                         addTransaction.Parameters.AddWithValue("@IsCard", isCard);
                                         addTransaction.Parameters.AddWithValue("@UserId", username);
                                         addTransaction.Parameters.AddWithValue("@FlightID", flightID);
-                                        addTransaction.Parameters.AddWithValue("@IsComplete", 1);
-
+                                       
                                         rows = addTransaction.ExecuteNonQuery();
                                         if (rows > 0)
                                         {
