@@ -73,7 +73,7 @@ namespace Air3550
                     Console.WriteLine("Input an option to continue");
                     Console.WriteLine("1. Add Planes");
                     Console.WriteLine("2. Assign plane");
-                    Console.WriteLine("Q. Go Back");
+                    Console.WriteLine("Q. Go Back\n");
                     string? input = Console.ReadLine();
                     if (input == null | (input != "1" & input != "2" & input != "Q"))
                     {
@@ -120,7 +120,7 @@ namespace Air3550
                     Console.WriteLine("3. Delete Flight");
                     Console.WriteLine("4. Add Planes");
                     // Console.WriteLine("4. Display All Flight");
-                    Console.WriteLine("Q. Go Back");
+                    Console.WriteLine("Q. Go Back\n");
                     string? input = Console.ReadLine();
                     if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "Q"))
                     {
@@ -749,8 +749,7 @@ namespace Air3550
                     sqlConn.Close();
                 }
             }
-            else
-            {
+            else{
                 Console.WriteLine("Input a Flight Number");
                 string? flightNumber = Console.ReadLine();
                 while (flightNumber == null)
@@ -893,6 +892,9 @@ namespace Air3550
                     string updateString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightiD}' AND UserID = '{userID}'";
                     SqlCommand update = new SqlCommand(updateString, sqlConn);
                     update.ExecuteNonQuery();
+                    string updateSeatsQueryString = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable + 1 WHERE FlightID = {flightiD}";
+                    SqlCommand updateSeatsQuery = new SqlCommand(updateSeatsQueryString, sqlConn);
+                    updateSeatsQuery.ExecuteNonQuery();
                     sqlConn.Close();
                 }
             }
@@ -905,7 +907,6 @@ namespace Air3550
         {
             Console.WriteLine("Input Plane Model:");
             string? model = Console.ReadLine();
-
             int seats;
             Console.WriteLine("Input Number of Seats:");
             while (!int.TryParse(Console.ReadLine(), out seats))
@@ -928,7 +929,6 @@ namespace Air3550
         }
         public static void ChoosePlanes()
         {
-            // Prompt user to enter flight number
             Console.WriteLine("Enter flight number: ");
             string? flightNumber = Console.ReadLine();
             int existingPlaneId = 0;
@@ -958,16 +958,13 @@ namespace Air3550
                     SqlDataAdapter adapter = new SqlDataAdapter(command);
                     adapter.Fill(planesTable);
                 }
-
                 // Display plane options
                 Console.WriteLine("Available planes:");
                 foreach (DataRow row in planesTable.Rows)
                 {
-                    Console.WriteLine($"{row["PlaneID"]}: {row["Model"]} ({row["Seats"]} seats)");
+                    Console.WriteLine($"Plane ID: {row["PlaneID"]}, Model: {row["Model"]} ({row["Seats"]} seats)");
                 }
-
-                // Prompt user to select a plane
-                Console.WriteLine("Enter plane ID: ");
+                Console.WriteLine("\nEnter plane ID: ");
                 string? planeId = Console.ReadLine();
 
                 // Retrieve selected plane's seats
@@ -985,7 +982,7 @@ namespace Air3550
                 {
                     Console.WriteLine($"\nFlight {flightNumber} already has a plane assigned to it:");
                     Console.WriteLine($"Plane ID: {existingPlaneId}, Seats available: {existingSeatsAvailable}");
-                    Console.Write("\nDo you want to update the plane assignment? (Y/N): ");
+                    Console.Write("\nDo you want to update the plane assignment? (Y/N): \n");
                     string? answer = Console.ReadLine();
                     while (answer == null)
                     {
@@ -1013,7 +1010,6 @@ namespace Air3550
                         Console.WriteLine($"Update was declined. No changes were made for flight {flightNumber}.\n");
                     }
                 }
-
                 else
                 {
                     // Update flight's SeatsAvailable column
