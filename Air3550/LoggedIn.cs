@@ -80,10 +80,11 @@ namespace Air3550
                     continue;
                 }
                 Flights flight = new Flights(CurUser);
+                UserOptions options = new UserOptions(CurUser);
                 switch (input)
                 {
                     case "1":
-                        flight.BookFlight(CurUser.UserID);
+                        options.BookFlight(CurUser.UserID);
                         break;
                     case "Q":
                         return;
