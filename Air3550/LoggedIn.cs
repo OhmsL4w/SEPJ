@@ -98,7 +98,8 @@ namespace Air3550
                     case "M":
                         if(CurUser.IsManager) 
                         {
-                            // Flights.ChoosePlanes();
+                            Flights flight = new Flights(CurUser);
+                            flight.ManagePlanes();
                         }
                         else
                         {
