@@ -931,7 +931,7 @@ namespace Air3550
                                         }
 
                                     }
-                                    string Transac = $"INSERT INTO Transactions (AmountCharged, IsCard, UserID, FlightID, IsComplete) VALUES ( @AmountCharged, @IsCard, @UserId, @FlightID)";
+                                    string Transac = $"INSERT INTO Transactions (AmountCharged, IsCard, UserID, FlightID) VALUES ( @AmountCharged, @IsCard, @UserId, @FlightID)";
                                     using (SqlCommand addTransaction = new SqlCommand(Transac, sqlConn))
                                     {
                                         addTransaction.Parameters.AddWithValue("@AmountCharged", price);
