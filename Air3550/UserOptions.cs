@@ -109,7 +109,7 @@ namespace Air3550
                         while (true)
                         {
                             Console.WriteLine("Please select flight by entering its Flight ID");
-                            if (int.TryParse(Console.ReadLine(), out selectFlight) && selectFlight >= 100 && selectFlight <= 999)
+                            if (int.TryParse(Console.ReadLine(), out selectFlight))
                             {
                                 break;
                             }
@@ -121,6 +121,12 @@ namespace Air3550
                             flightInfo.Parameters.AddWithValue("@flightID", selectFlight);
                             SqlDataReader fInfo = flightInfo.ExecuteReader();
                             fInfo.Read();
+                            if (!fInfo.HasRows)
+                            {
+                                Console.WriteLine("No flights found with this flight ID please try booking again");
+                                BookFlight(username);
+                                return;
+                            }
                             // Retrieve the flight information from the reader
                             OrgCity = (string)fInfo["OriginCity"];
                             DesCity = (string)fInfo["DestinationCity"];
@@ -149,10 +155,9 @@ namespace Air3550
                                             int conFID = (int)con["FlightID"];
                                             string conOrgCity = (string)con["OriginCity"];
                                             string conDesCity = (string)con["DestinationCity"];
-                                            Decimal conprice = (Decimal)con["Price"];
                                             DateTime conDepart = con.GetDateTime(con.GetOrdinal("DepartureDateTime"));
                                             DateTime conArrive = con.GetDateTime(con.GetOrdinal("ArrivalDateTime"));
-                                            Console.WriteLine($"Flight ID {conFID} from {conOrgCity} at {conDepart.ToString()} to {conDesCity} at {conArrive.ToString()} at Price: ${conprice}");
+                                            Console.WriteLine($"Flight ID {conFID} from {conOrgCity} at {conDepart.ToString()} to {conDesCity} at {conArrive.ToString()}");
                                         }
                                     }
                                     con.Close();
@@ -160,7 +165,7 @@ namespace Air3550
 
                             }
                         }
-                        if (seats == 0)
+                        if (seats <= 0)
                         {
                             Console.WriteLine("Flight is Fully Booked");
                             return;
@@ -211,16 +216,17 @@ namespace Air3550
                                         }
 
                                     }
-                                    if (notEnoughPoints == true)
+                                    if (notEnoughPoints == true || paymentMethod == "1")
                                     {
                                         CCard = paymenreader.IsDBNull(paymenreader.GetOrdinal("CreditCard")) ? null : (string)paymenreader["CreditCard"];
                                         string CCsave = null;
                                         if (CCard != null)
                                         {
                                             Console.WriteLine("Would you like to use the Card you have saved for your account?\n1.Y\n2.N");
-                                            CCsave = Console.ReadLine();
+                                            
                                             do
                                             {
+                                                CCsave = Console.ReadLine();
                                                 if (CCsave == "2")
                                                 {
                                                     //ask user for new card and see if they want to save it to their account
@@ -230,8 +236,8 @@ namespace Air3550
                                                         newCCard = Console.ReadLine();
                                                     } while (newCCard == null || newCCard.Length != 16);
                                                 }
-                                                else break;
-                                            } while (CCsave == null || CCsave != "1" || CCsave != "2");
+                                                else if (CCsave == "1")break;                                                
+                                            } while (CCsave == null | (CCsave != "1" && CCsave != "2"));
                                         }
                                         else
                                         {
@@ -270,8 +276,7 @@ namespace Air3550
                                     }
                                     else
                                     {
-                                        subSeat = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable -1 where FlightID = {flightID}" +
-                                                  $"UPDATE Flights SET SeatsAvailable = SeatsAvailable -1 where FlightID = {firstCon} " +
+                                        subSeat = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable -1 where FlightID = {firstCon} " +
                                                   $"UPDATE Flights SET SeatsAvailable = SeatsAvailable -1 where FlightID = {SecCon} ";
                                     }
                                     using (SqlCommand querySubSeat = new SqlCommand(subSeat, sqlConn))
