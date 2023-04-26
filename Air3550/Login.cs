@@ -1,6 +1,7 @@
 ﻿using Air3550;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
+using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Transactions;
@@ -204,7 +205,7 @@ public class Login
         string? password, PNumber, Address, CCard, queryStringUpdate;
         int rows;
 
-         // open the database
+        // open the database
         // "jdbc:sqlserver://localhost;integratedSecurity=true;encrypt=false"
         using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
         {
@@ -320,37 +321,5 @@ public class Login
 
             sqlConn.Close();
         }
-    }
-    public static void DisplayFlightHistory(string username)
-    {
-        bool hasFlightHistory = false;
-        using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
-        {
-            
-            sqlConn.Open();
-            string queryString = $"SELECT Flights.FlightID, Flights.OriginCity, Flights.DestinationCity, Flights.DepartureDateTime, Flights.ArrivalDateTime " +
-                                $"FROM Transactions " +
-                                $"JOIN Flights ON Transactions.FlightID = Flights.FlightID " +
-                                $"WHERE Transactions.UserID = {username}";
-            SqlCommand query = new SqlCommand(queryString, sqlConn);
-            using (SqlDataReader reader = query.ExecuteReader())
-                while (reader.Read())
-                {
-                    hasFlightHistory = true;
-                    Console.WriteLine("Flight History: ");
-                    Console.WriteLine("...............");
-                    Console.WriteLine($"Flight Number: {reader["FlightID"]}");
-                    Console.WriteLine($"Origin Airport: {reader["OriginCity"]}");
-                    Console.WriteLine($"Destination Airport: {reader["DestinationCity"]}");
-                    Console.WriteLine($"Departure Date Time: {reader["DepartureDateTime"]}");
-                    Console.WriteLine($"Arrival Date Time: {reader["ArrivalDateTime"]}");
-                } 
-            sqlConn.Close();        
-        }
-        
-        if (!hasFlightHistory)
-        {
-            Console.WriteLine("No flight history found for the given user.");
-        }      
     }
 }

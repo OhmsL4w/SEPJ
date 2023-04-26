@@ -118,11 +118,10 @@ namespace Air3550
                     Console.WriteLine("1. Update Flight");
                     Console.WriteLine("2. Add Flight");
                     Console.WriteLine("3. Delete Flight");
-                    Console.WriteLine("4. Add Planes");
                     // Console.WriteLine("4. Display All Flight");
                     Console.WriteLine("Q. Go Back\n");
                     string? input = Console.ReadLine();
-                    if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "Q"))
+                    if (input == null | (input != "1" & input != "2" & input != "3" & input != "Q"))
                     {
                         Console.WriteLine("Please input a correct input");
                         continue;
@@ -137,9 +136,6 @@ namespace Air3550
                             break;
                         case "3":
                             DeleteFlight();
-                            break;
-                        case "4":
-                            AddPlanes();
                             break;
                         /* case "4":
                              DisplayAllFlights();
@@ -674,7 +670,7 @@ namespace Air3550
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
                 sqlConn.Open();
-                DateTime endDate = DateTime.Now.AddMonths(1);
+                DateTime endDate = DateTime.Now.AddMonths(6);
                 DateTime departureDate = ndd;
                 while (departureDate <= endDate)
                 {
@@ -863,21 +859,19 @@ namespace Air3550
                     // Refund the payment to the user
                     if (isCard)
                     {
-                        string refundQueryString = $"UPDATE Users SET CreditCard = 'CreditCard' + '{paymentAmount}' WHERE UserID = {userID}";
-                        SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
-                        refundQuery.ExecuteNonQuery();
+                        Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {userID} at original payment");
                     }
                     else
                     {
                         string refundQueryString = $"UPDATE Users SET PointsAvailable = PointsAvailable + {paymentAmount} WHERE UserID = {userID}";
                         SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
                         refundQuery.ExecuteNonQuery();
+                        Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount}, points has been issued to user {userID}'s account\n");
                     }
                     // Mark the transaction as refunded
                     string markAsRefundedQueryString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightID}' AND UserID = '{userID}'";
                     SqlCommand markAsRefundedQuery = new SqlCommand(markAsRefundedQueryString, sqlConn);
                     markAsRefundedQuery.ExecuteNonQuery();
-                    Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {userID}\n");
                 }
                 else if (isRefunded == true)
                 {
@@ -888,72 +882,6 @@ namespace Air3550
                     Console.WriteLine($"No transaction found for flight {flightID}\n");
                 }
                 sqlConn.Close();
-            }
-        }
-        public static void cancel()
-        {
-            Console.WriteLine("Please enter the flight ID to be cancelled: ");
-            string? flightiD = Console.ReadLine();
-            while (flightiD == null)
-            {
-                Console.WriteLine("Please input a Flight ID");
-                flightiD = Console.ReadLine();
-            }
-            // Check if flightID exists in Transactions table
-            bool flightExists = false;
-            bool isCard = false;
-            string? userID = "";
-            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
-            {
-                sqlConn.Open();
-                string queryString = $"SELECT UserID, IsCard FROM Transactions WHERE FlightID = '{flightiD}'";
-                SqlCommand query = new SqlCommand(queryString, sqlConn);
-                using (SqlDataReader reader = query.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        userID = reader.GetValue(0).ToString();
-                        isCard = reader.GetBoolean(1);
-                        flightExists = true;
-                    }
-                    reader.Close();
-                }
-                sqlConn.Close();
-                if (flightExists)
-                {
-                    sqlConn.Open();
-                    queryString = $"SELECT * FROM Flights WHERE FlightID = '{flightiD}'";
-                    query = new SqlCommand(queryString, sqlConn);
-                    SqlDataReader reader = query.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        DateTime departureTime = (DateTime)reader["DepartureDateTime"];
-                        DateTime currentTime = DateTime.Now;    
-                        reader.Close();
-                        if (departureTime.Subtract(currentTime).TotalHours >= 1)
-                        {
-                            RefundFlight(flightiD, isCard);
-                            // Mark flight as refunded in Transactions table               
-                            string updateString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightiD}' AND UserID = '{userID}'";
-                            SqlCommand update = new SqlCommand(updateString, sqlConn);
-                            update.ExecuteNonQuery();
-                            string updateSeatsQueryString = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable + 1 WHERE FlightID = {flightiD}";
-                            SqlCommand updateSeatsQuery = new SqlCommand(updateSeatsQueryString, sqlConn);
-                            updateSeatsQuery.ExecuteNonQuery();
-                            reader.Close();
-                        }
-                        else
-                        {
-                            Console.WriteLine("Error: Flight cannot be cancelled as it is less than 1 hour to the departure time.");
-                        }
-                    }
-                    sqlConn.Close();
-                }
-                else
-                {
-                    Console.WriteLine("Sorry, the specified flight ID does not exist.");
-                }
-                sqlConn.Close ();
             }
         }
         public void AddPlanes()
@@ -984,8 +912,8 @@ namespace Air3550
         {
             Console.WriteLine("Enter flight number: ");
             string? flightNumber = Console.ReadLine();
-            int existingPlaneId = 0;
-            int existingSeatsAvailable = 0;
+            int? existingPlaneId = 0;
+            int? existingSeatsAvailable = 0;
             bool hasExistingPlane = false;
 
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
@@ -997,9 +925,16 @@ namespace Air3550
                 SqlDataReader reader = cmd.ExecuteReader();
                 if (reader.Read())
                 {
-                    existingPlaneId = Convert.ToInt32(reader["PlaneID"]);
-                    existingSeatsAvailable = Convert.ToInt32(reader["SeatsAvailable"]);
-                    hasExistingPlane = true;
+                    if (reader["PlaneID"] == DBNull.Value)
+                    {
+                        hasExistingPlane = false;
+                    }
+                    else
+                    {
+                        existingPlaneId = Convert.ToInt32(reader["PlaneID"]);
+                        existingSeatsAvailable = Convert.ToInt32(reader["SeatsAvailable"]);
+                        hasExistingPlane = true;
+                    }
                 }
                 reader.Close(); // Close the SqlDataReader object
 

@@ -92,15 +92,14 @@ namespace Air3550
                         Login.ChangeAccountSettings(CurUser.UserID);
                         break;
                     case "3":
-                        Login.DisplayFlightHistory(CurUser.UserID);
+                        UserOptions.DisplayFlightHistory(CurUser.UserID);
                         break;
                     case "4":
-                        Flights.cancel();
+                        UserOptions.cancel();
                         break;
                     case "M":
                         if(CurUser.IsManager) 
-                        {
-                            Flights flight = new Flights(CurUser);
+                        {                      
                             flight.ManagePlanes();
                         }
                         else

@@ -370,6 +370,108 @@ namespace Air3550
             }
             return;
         }
-      }
+        public static void cancel()
+        {
+            Console.WriteLine("Please enter the flight ID to be cancelled: ");
+            string? flightiD = Console.ReadLine();
+            while (flightiD == null)
+            {
+                Console.WriteLine("Please input a Flight ID");
+                flightiD = Console.ReadLine();
+            }
+            // Check if flightID exists in Transactions table
+            bool flightExists = false;
+            bool isCard = false;
+            string? userID = "";
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
+                sqlConn.Open();
+                string queryString = $"SELECT UserID, IsCard FROM Transactions WHERE FlightID = '{flightiD}'";
+                SqlCommand query = new SqlCommand(queryString, sqlConn);
+                using (SqlDataReader reader = query.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        userID = reader.GetValue(0).ToString();
+                        isCard = reader.GetBoolean(1);
+                        flightExists = true;
+                    }
+                    reader.Close();
+                }
+                sqlConn.Close();
+                if (flightExists)
+                {
+                    sqlConn.Open();
+                    queryString = $"SELECT * FROM Flights WHERE FlightID = '{flightiD}'";
+                    query = new SqlCommand(queryString, sqlConn);
+                    SqlDataReader reader = query.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        DateTime departureTime = (DateTime)reader["DepartureDateTime"];
+                        DateTime currentTime = DateTime.Now;
+                        reader.Close();
+                        if (departureTime.Subtract(currentTime).TotalHours >= 1)
+                        {
+                            Flights.RefundFlight(flightiD, isCard);
+                            // Mark flight as refunded in Transactions table               
+                            string updateString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightiD}' AND UserID = '{userID}'";
+                            SqlCommand update = new SqlCommand(updateString, sqlConn);
+                            update.ExecuteNonQuery();
+                            string updateSeatsQueryString = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable + 1 WHERE FlightID = {flightiD}";
+                            SqlCommand updateSeatsQuery = new SqlCommand(updateSeatsQueryString, sqlConn);
+                            updateSeatsQuery.ExecuteNonQuery();
+                            reader.Close();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error: Flight cannot be cancelled as it is less than 1 hour to the departure time.");
+                        }
+                    }
+                    sqlConn.Close();
+                }
+                else
+                {
+                    Console.WriteLine("Sorry, the specified flight ID does not exist.");
+                }
+                sqlConn.Close();
+            }
+        }
+        public static void DisplayFlightHistory(string username)
+        {
+            Console.WriteLine("Flight History: ");
+            Console.WriteLine("...............");
+            bool hasFlightHistory = false;
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
+
+                sqlConn.Open();
+                string queryString = $"SELECT Flights.FlightID, Flights.OriginCity, Flights.DestinationCity, Flights.DepartureDateTime, Flights.ArrivalDateTime, Transactions.IsRefunded " +
+                                    $"FROM Transactions " +
+                                    $"JOIN Flights ON Transactions.FlightID = Flights.FlightID " +
+                                    $"WHERE Transactions.UserID = {username}";
+                SqlCommand query = new SqlCommand(queryString, sqlConn);
+                using (SqlDataReader reader = query.ExecuteReader())
+                    while (reader.Read())
+                    {
+                        hasFlightHistory = true;
+                        Console.WriteLine($"Flight Number: {reader["FlightID"]}");
+                        Console.WriteLine($"Origin Airport: {reader["OriginCity"]}");
+                        Console.WriteLine($"Destination Airport: {reader["DestinationCity"]}");
+                        Console.WriteLine($"Departure Date Time: {reader["DepartureDateTime"]}");
+                        Console.WriteLine($"Arrival Date Time: {reader["ArrivalDateTime"]}");
+
+                        if (reader["IsRefunded"] != DBNull.Value && (bool)reader["IsRefunded"])
+                        {
+                            Console.WriteLine("This flight is INACTIVE. A refund has been processed for this flight\n");
+                        }
+                    }
+                sqlConn.Close();
+            }
+            if (!hasFlightHistory)
+            {
+                Console.WriteLine("No flight history found for the given user.");
+            }
+        }
+    }
 
 }
