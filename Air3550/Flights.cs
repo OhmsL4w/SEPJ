@@ -823,8 +823,14 @@ namespace Air3550
 
                     SqlDateTime sqlDepartureDate = new SqlDateTime(departureDate.Year, departureDate.Month, departureDate.Day, departureDate.Hour, departureDate.Minute, departureDate.Second);
                     SqlDateTime sqlArrivalDate = new SqlDateTime(arrivalDate.Year, arrivalDate.Month, arrivalDate.Day, arrivalDate.Hour, arrivalDate.Minute, arrivalDate.Second);
-                    SqlDateTime sqlConArrDate = new SqlDateTime(conArrDate.Year, conArrDate.Month, conArrDate.Day, conArrDate.Hour, conArrDate.Minute, conArrDate.Second);
-                    SqlDateTime sqlConDeptDate = new SqlDateTime(conDeptDate.Year, conDeptDate.Month, conDeptDate.Day, conDeptDate.Hour, conDeptDate.Minute, conDeptDate.Second);
+                    // connection flights
+                    SqlDateTime sqlConArrDate = new SqlDateTime();
+                    SqlDateTime sqlConDeptDate = new SqlDateTime();
+                    if(con != null)
+                    {
+                        sqlConArrDate = new SqlDateTime(conArrDate.Year, conArrDate.Month, conArrDate.Day, conArrDate.Hour, conArrDate.Minute, conArrDate.Second);
+                        sqlConDeptDate = new SqlDateTime(conDeptDate.Year, conDeptDate.Month, conDeptDate.Day, conDeptDate.Hour, conDeptDate.Minute, conDeptDate.Second);
+                    }
                     int? conFlightID1 = null;
                     int? conFlightID2 = null;
                     if (con != null) // has a connection flight so create the connection first then link them to the main flight
@@ -841,8 +847,13 @@ namespace Air3550
                         conFlightID2 = (int)conQuery.ExecuteScalar();
                     }
                     // input the connected flight 
-                    string queryString = $"INSERT INTO Flights (FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime, FirstConFlight, SecondConFlight)" +
-                    $"VALUES ({nfn}, \'{noa}\', \'{nda}\', {np}, \'{sqlDepartureDate}\', \'{sqlArrivalDate}\', {conFlightID1}, {conFlightID2})";
+                    string queryString = $"INSERT INTO Flights (FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime)" +
+                    $"VALUES ({nfn}, \'{noa}\', \'{nda}\', {np}, \'{sqlDepartureDate}\', \'{sqlArrivalDate}\')";
+                    if(con != null)
+                    {
+                        queryString = $"INSERT INTO Flights (FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime, FirstConFlight, SecondConFlight, ConCity)" +
+                        $"VALUES ({nfn}, \'{noa}\', \'{nda}\', {np}, \'{sqlDepartureDate}\', \'{sqlArrivalDate}\', {conFlightID1}, {conFlightID2}, \'{con}\')";
+                    }
                     SqlCommand query = new SqlCommand(queryString, sqlConn);
                     int rows = query.ExecuteNonQuery();
 
