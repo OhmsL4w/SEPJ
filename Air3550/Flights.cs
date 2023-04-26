@@ -712,6 +712,7 @@ namespace Air3550
                 if (input == "Q") return;
                 break;
             }
+            
             if (flightID)
             {
                 Console.WriteLine("Input a Flight ID");
@@ -723,7 +724,7 @@ namespace Air3550
                 }
                 using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
                 {
-                    // first get the flight ID for that flight
+                    // get value of isCard
                     sqlConn.Open();
                     string queryString = $"SELECT TOP 1 IsCard FROM Transactions WHERE FlightID = '{flight}' ORDER BY TransactionID DESC";
                     SqlCommand query = new SqlCommand(queryString, sqlConn);
@@ -736,7 +737,22 @@ namespace Air3550
                     reader.Close();
                     sqlConn.Close();
 
-                    RefundFlight(flight, isCard);
+                    //check flight's date and only refund to flight after the date of delete
+                    sqlConn.Open();
+                    queryString = $"SELECT * FROM Flights WHERE FlightID = '{flight}'";
+                    query = new SqlCommand(queryString, sqlConn);
+                    reader = query.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        DateTime departureTime = (DateTime)reader["DepartureDateTime"];
+                        DateTime currentTime = DateTime.Now;
+                        if (currentTime < departureTime)
+                        {
+                            RefundFlight(flight, isCard);
+                        }
+                    }
+                    reader.Close();
+                    sqlConn.Close();
 
                     sqlConn.Open();
                     //  queryString = $"DELETE Flights WHERE FlightID = {flight}";
@@ -771,8 +787,10 @@ namespace Air3550
                         flightIDs.Add(reader.GetValue(0).ToString());
                     }
                     reader.Close();
+                    sqlConn.Close();
 
                     // delete all flights with that flight number
+                    sqlConn.Open();
                     // queryString = $"DELETE Flights WHERE FlightNumber = {flightNumber}";
                     query = new SqlCommand(queryString, sqlConn);
                     int rows = query.ExecuteNonQuery();
@@ -780,10 +798,13 @@ namespace Air3550
                     {
                         Console.WriteLine($"Successfully deleted {rows} flights with flight number {flightNumber}!\n");
                     }
+                    sqlConn.Close();
+
                     // call Refund(string FlightID, bool IsCard) on all flight IDs for that flight number
                     foreach (string? flightiD in flightIDs)
                     {
                         // get the IsCard value from the transactions table
+                        sqlConn.Open();
                         queryString = $"SELECT IsCard FROM Transactions WHERE FlightID = {flightiD}";
                         query = new SqlCommand(queryString, sqlConn);
                         reader = query.ExecuteReader();
@@ -793,9 +814,25 @@ namespace Air3550
                             isCard = reader.GetBoolean(0);
                         }
                         reader.Close();
-                        RefundFlight(flightiD, isCard);
+                        sqlConn.Close();
+
+                        //check flight's date and only refund to flight after the date of delete
+                        sqlConn.Open();
+                        queryString = $"SELECT * FROM Flights WHERE FlightID = '{flightiD}'";
+                        query = new SqlCommand(queryString, sqlConn);
+                        reader = query.ExecuteReader();
+                        if (reader.Read())
+                        {
+                            DateTime departureTime = (DateTime)reader["DepartureDateTime"];
+                            DateTime currentTime = DateTime.Now;
+                            if (currentTime < departureTime)
+                            {
+                                RefundFlight(flightiD, isCard);
+                            }
+                        }
+                        reader.Close();
+                        sqlConn.Close();                                        
                     }
-                    sqlConn.Close();
                 }
             }
         }
@@ -879,28 +916,44 @@ namespace Air3550
                         isCard = reader.GetBoolean(1);
                         flightExists = true;
                     }
+                    reader.Close();
                 }
                 sqlConn.Close();
-            }
-            if (flightExists)
-            {
-                RefundFlight(flightiD, isCard);
-                // Mark flight as refunded in Transactions table
-                using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+                if (flightExists)
                 {
                     sqlConn.Open();
-                    string updateString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightiD}' AND UserID = '{userID}'";
-                    SqlCommand update = new SqlCommand(updateString, sqlConn);
-                    update.ExecuteNonQuery();
-                    string updateSeatsQueryString = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable + 1 WHERE FlightID = {flightiD}";
-                    SqlCommand updateSeatsQuery = new SqlCommand(updateSeatsQueryString, sqlConn);
-                    updateSeatsQuery.ExecuteNonQuery();
+                    queryString = $"SELECT * FROM Flights WHERE FlightID = '{flightiD}'";
+                    query = new SqlCommand(queryString, sqlConn);
+                    SqlDataReader reader = query.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        DateTime departureTime = (DateTime)reader["DepartureDateTime"];
+                        DateTime currentTime = DateTime.Now;    
+                        reader.Close();
+                        if (departureTime.Subtract(currentTime).TotalHours >= 1)
+                        {
+                            RefundFlight(flightiD, isCard);
+                            // Mark flight as refunded in Transactions table               
+                            string updateString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightiD}' AND UserID = '{userID}'";
+                            SqlCommand update = new SqlCommand(updateString, sqlConn);
+                            update.ExecuteNonQuery();
+                            string updateSeatsQueryString = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable + 1 WHERE FlightID = {flightiD}";
+                            SqlCommand updateSeatsQuery = new SqlCommand(updateSeatsQueryString, sqlConn);
+                            updateSeatsQuery.ExecuteNonQuery();
+                            reader.Close();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error: Flight cannot be cancelled as it is less than 1 hour to the departure time.");
+                        }
+                    }
                     sqlConn.Close();
                 }
-            }
-            else
-            {
-                Console.WriteLine("Sorry, the specified flight ID does not exist.");
+                else
+                {
+                    Console.WriteLine("Sorry, the specified flight ID does not exist.");
+                }
+                sqlConn.Close ();
             }
         }
         public void AddPlanes()
