@@ -64,7 +64,7 @@ namespace Air3550
                 Console.WriteLine("2. Change Account Information");
                 Console.WriteLine("3. View Past Flights");
                 Console.WriteLine("4. Cancel Flights");
-                Console.WriteLine("Q. Go Back");
+                Console.WriteLine("Q. Go Back\n");
                 if(CurUser.IsManager)
                 {
                     Console.WriteLine("M. Choose Planes");
@@ -92,15 +92,15 @@ namespace Air3550
                         Login.ChangeAccountSettings(CurUser.UserID);
                         break;
                     case "3":
-                        Login.DisplayFlightHistory(CurUser.UserID);
+                        UserOptions.DisplayFlightHistory(CurUser.UserID);
                         break;
                     case "4":
-                        //Flights.CancelFlights();
+                        UserOptions.cancel();
                         break;
                     case "M":
                         if(CurUser.IsManager) 
-                        {
-                            // Flights.ChoosePlanes();
+                        {                      
+                            flight.ManagePlanes();
                         }
                         else
                         {
