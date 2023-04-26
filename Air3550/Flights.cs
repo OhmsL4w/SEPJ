@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,7 +49,6 @@ namespace Air3550
                 sqlConn.Close();
             }
         }
-
         public void ManageFlights()
         {
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
@@ -65,7 +66,7 @@ namespace Air3550
                             $"\n\t\t   Arrival Date: {reader.GetDateTime(6).ToString("d")}    Arrival Time: {reader.GetDateTime(6).ToString("T")}");
                     }
                 }
-                while(true)
+                while (true)
                 {
                     Console.WriteLine("Input an option to continue");
                     Console.WriteLine("1. Update Flight");
@@ -94,7 +95,7 @@ namespace Air3550
                             DisplayAllFlights();
                             break;*/
                         case "Q":
-                            sqlConn.Close();                       
+                            sqlConn.Close();
                             return;
                     }
                 }
@@ -129,7 +130,7 @@ namespace Air3550
         public void UpdateFlight()
         {
             bool flightID = false;
-            while(true)
+            while (true)
             {
                 Console.WriteLine("Would you like to update a single flight, or all flights with a flight number?");
                 Console.WriteLine("1. Single Flight (Flight ID)");
@@ -149,7 +150,7 @@ namespace Air3550
             {
                 Console.WriteLine("Input a Flight ID");
                 string? flight = Console.ReadLine();
-                while(flight == null)
+                while (flight == null)
                 {
                     Console.WriteLine("Please input a Flight ID");
                     flight = Console.ReadLine();
@@ -189,7 +190,7 @@ namespace Air3550
                                 Console.WriteLine("Input a new Flight Number");
                                 string? nfns = Console.ReadLine();
                                 int nfn;
-                                while(true)
+                                while (true)
                                 {
                                     if (!int.TryParse(nfns, out nfn))
                                     {
@@ -217,7 +218,7 @@ namespace Air3550
                                 while (noa == null | noa?.Length != 3)
                                 {
                                     Console.WriteLine("Input a correct airport code please");
-                                
+
                                     Console.WriteLine("Input a new Airport Code");
                                     noa = Console.ReadLine();
                                 }
@@ -333,7 +334,8 @@ namespace Air3550
                         }
                     }
                 }
-            }else
+            }
+            else
             {
                 Console.WriteLine("Input a Flight Number");
                 string? flight = Console.ReadLine();
@@ -553,6 +555,7 @@ namespace Air3550
                 Console.WriteLine("Input a new Airport Code");
                 noa = Console.ReadLine();
             }
+
             Console.WriteLine("Input a new Destination Airport");
             string? nda = Console.ReadLine();
             while (nda == null | nda?.Length != 3)
@@ -682,7 +685,8 @@ namespace Air3550
                     }
                     sqlConn.Close();
                 }
-            }else
+            }
+            else
             {
                 Console.WriteLine("Input a Flight Number");
                 string? flight = Console.ReadLine();
@@ -706,5 +710,6 @@ namespace Air3550
                 }
             }
         }
+        
     }
 }

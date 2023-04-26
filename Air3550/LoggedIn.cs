@@ -79,10 +79,12 @@ namespace Air3550
                     Console.WriteLine("Please input a correct input");
                     continue;
                 }
+                Flights flight = new Flights(CurUser);
+                UserOptions options = new UserOptions(CurUser);
                 switch (input)
                 {
                     case "1":
-                        Login.LoginMethod();
+                        options.BookFlight(CurUser.UserID);
                         break;
                     case "Q":
                         return;
@@ -108,7 +110,6 @@ namespace Air3550
                     case "E":
                         if( CurUser.IsEngineer)
                         {
-                            Flights flight = new Flights(CurUser);
                             flight.ManageFlights();
                         }else
                         {
