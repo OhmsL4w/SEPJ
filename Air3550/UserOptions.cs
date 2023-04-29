@@ -22,7 +22,7 @@ namespace Air3550
         }
         public void BookFlight(string username)
         {
-            string? OriginAirport, DestinationAirport, DDate, ADate, checkFlightDets, paymentMethod, checkPaymentDets, CCardUpdate, CCard = null, newCCard;
+            string? OriginAirport, DestinationAirport, DDate, ADate, checkFlightDets, paymentMethod, checkPaymentDets, CCardUpdate, CCard = null, newCCard = null;
 
             int rows = 0, isCard = 0, addPoints = 0;
             do
@@ -104,7 +104,7 @@ namespace Air3550
                         }
                         reader.Close();
 
-                        addPoints = (int)price * 100;
+                        addPoints = (int)(price * 100);
                         // add which flight they want to select based on flight ID
                         while (true)
                         {
@@ -188,14 +188,14 @@ namespace Air3550
                                 if (paymenreader.HasRows)
                                 {
                                     bool notEnoughPoints = false;
+                                    int points = (int)paymenreader["PointsAvailable"];
+                                    CCard = paymenreader.IsDBNull(paymenreader.GetOrdinal("CreditCard")) ? null : (string)paymenreader["CreditCard"];
+                                    paymenreader.Close();
                                     if (paymentMethod == "2")
                                     {
-                                        int points = (int)paymenreader["PointsAvailable"];
                                         if (points >= addPoints)
                                         {
-                                            paymenreader.Close();
                                             Console.WriteLine("You have Enough points");
-
                                             string? usingPoints = $"UPDATE Users SET PointsAvailable = PointsAvailable - @pointsToReduce,PointsUsed = PointsUsed + @pointsToAdd WHERE UserID = @UserId";
                                             using (SqlCommand updatePoints = new SqlCommand(usingPoints, sqlConn))
                                             {
@@ -218,11 +218,10 @@ namespace Air3550
                                     }
                                     if (notEnoughPoints == true || paymentMethod == "1")
                                     {
-                                        CCard = paymenreader.IsDBNull(paymenreader.GetOrdinal("CreditCard")) ? null : (string)paymenreader["CreditCard"];
-                                        string CCsave = null;
+                                        string? CCsave = null;
                                         if (CCard != null)
                                         {
-                                            Console.WriteLine("Would you like to use the Card you have saved for your account?\n1.Y\n2.N");
+                                            Console.WriteLine("Would you like to use the Card you have saved for your account?\n1.Yes\n2.No");
                                             
                                             do
                                             {
@@ -235,6 +234,28 @@ namespace Air3550
                                                         Console.WriteLine("Enter new Credit Card");
                                                         newCCard = Console.ReadLine();
                                                     } while (newCCard == null || newCCard.Length != 16);
+                                                    string? saveNew;
+                                                    do
+                                                    {
+                                                        Console.WriteLine("Would you like to save this card to your account?");
+                                                        Console.WriteLine("1. Yes");
+                                                        Console.WriteLine("2. No");
+                                                        saveNew = Console.ReadLine();
+                                                    } while (saveNew == null | (saveNew != "1" && saveNew != "2"));
+                                                    if(saveNew == "1")
+                                                    {
+                                                        CCardUpdate = $"UPDATE Users SET CreditCard = @CreditCard WHERE UserID = @UserId";
+                                                        using (SqlCommand queryUpdateCC = new SqlCommand(CCardUpdate, sqlConn))
+                                                        {
+                                                            queryUpdateCC.Parameters.AddWithValue("@CreditCard", newCCard);
+                                                            queryUpdateCC.Parameters.AddWithValue("@UserId", username);
+                                                            rows = queryUpdateCC.ExecuteNonQuery();
+                                                            if (rows == 0)
+                                                            {
+                                                                Console.WriteLine("Unsuccessful Credit Card change.");
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                                 else if (CCsave == "1")break;                                                
                                             } while (CCsave == null | (CCsave != "1" && CCsave != "2"));
@@ -252,7 +273,6 @@ namespace Air3550
                                             CCsave = Console.ReadLine();
                                             if (CCsave == "1")
                                             {
-                                                paymenreader.Close();
                                                 CCardUpdate = $"UPDATE Users SET CreditCard = @CreditCard WHERE UserID = @UserId";
                                                 using (SqlCommand queryUpdateCC = new SqlCommand(CCardUpdate, sqlConn))
                                                 {
@@ -266,18 +286,13 @@ namespace Air3550
                                                 }
                                             }
                                         }                                        
-                                    } 
-                                    paymenreader.Close();
+                                    }
 
-                                    string subSeat;
+                                    string subSeat = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable - 1 WHERE FlightID = {flightID}";
                                     if (firstCon != -1 && SecCon != -1)
                                     {
-                                        subSeat = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable - 1 WHERE FlightID = {flightID}";
-                                    }
-                                    else
-                                    {
-                                        subSeat = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable -1 where FlightID = {firstCon} " +
-                                                  $"UPDATE Flights SET SeatsAvailable = SeatsAvailable -1 where FlightID = {SecCon} ";
+                                        subSeat = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable - 1 WHERE FlightID = {firstCon} " +
+                                                  $"UPDATE Flights SET SeatsAvailable = SeatsAvailable - 1 WHERE FlightID = {SecCon} ";
                                     }
                                     using (SqlCommand querySubSeat = new SqlCommand(subSeat, sqlConn))
                                     {
@@ -298,7 +313,7 @@ namespace Air3550
                                             Console.WriteLine("couldn't add points");
                                         }
                                     }
-                                    string Transac = $"INSERT INTO Transactions (AmountCharged, IsCard, UserID, FlightID) VALUES ( @AmountCharged, @IsCard, @UserId, @FlightID)";
+                                    string Transac = $"INSERT INTO Transactions (AmountCharged, IsCard, UserID, FlightID) OUTPUT INSERTED.TransactionID VALUES ( @AmountCharged, @IsCard, @UserId, @FlightID)";
                                     using (SqlCommand addTransaction = new SqlCommand(Transac, sqlConn))
                                     {
                                         addTransaction.Parameters.AddWithValue("@AmountCharged", price);
@@ -313,11 +328,31 @@ namespace Air3550
                                         addTransaction.Parameters.AddWithValue("@IsCard", isCard);
                                         addTransaction.Parameters.AddWithValue("@UserId", username);
                                         addTransaction.Parameters.AddWithValue("@FlightID", flightID);
-
-                                        rows = addTransaction.ExecuteNonQuery();
-                                        if (rows == 0)
+                                        int transactionID = (int)addTransaction.ExecuteScalar();
+                                        if(isCard == 1)
                                         {
-                                            Console.WriteLine("couldn't add transaction");
+                                            string cardCharge = $"INSERT INTO CardCharges (FirstName, LastName, UserID, AmountCharged, CardNumber, TransactionID) OUTPUT INSERTED.TransactionID VALUES ( @firstName, @lastName, @UserId, @AmountCharged, @cardNumber, @transactionID)";
+                                            using (SqlCommand addCardCharge = new SqlCommand(cardCharge, sqlConn))
+                                            {
+                                                addCardCharge.Parameters.AddWithValue("@firstName", CurUser.FirstName);
+                                                addCardCharge.Parameters.AddWithValue("@lastName", CurUser.LastName);
+                                                addCardCharge.Parameters.AddWithValue("@UserId", CurUser.UserID);
+                                                addCardCharge.Parameters.AddWithValue("@AmountCharged", price);
+                                                if(newCCard != null)
+                                                {
+                                                    addCardCharge.Parameters.AddWithValue("@cardNumber", newCCard);
+                                                }else
+                                                {
+                                                    addCardCharge.Parameters.AddWithValue("@cardNumber", CCard);
+                                                }
+                                                addCardCharge.Parameters.AddWithValue("@transactionID", transactionID);
+                                                rows = addCardCharge.ExecuteNonQuery();
+                                                if (rows == 0)
+                                                {
+                                                    Console.WriteLine("Couldn't create CardCharge");
+                                                }
+
+                                            }
                                         }
                                     }
                                     string forReciept = $"SELECT * FROM Users WHERE UserID = @UserID";
@@ -342,7 +377,8 @@ namespace Air3550
                                             Console.WriteLine($"Flight booked from {OrgCity} at {DepartDets.ToString()} to {DesCity} at {AriveDets.ToString()} at Price: ${price}");
                                             if (paymentMethod == "1" || notEnoughPoints == true)
                                             {
-                                                Console.WriteLine($"The Payment Method Used was Credit Card: {CCard}");
+                                                string card = newCCard == null ? CCard : newCCard;
+                                                Console.WriteLine($"The Payment Method Used was Credit Card: {card}");
                                                 Console.WriteLine($"Points rewarded for the booking: {addPoints}, Total points in Account:{pointsAvial}");
                                             }
                                             else
@@ -370,73 +406,100 @@ namespace Air3550
             }
             return;
         }
-        public static void cancel()
+        public void cancel()
         {
             Console.WriteLine("Please enter the flight ID to be cancelled: ");
-            string? flightiD = Console.ReadLine();
-            while (flightiD == null)
+            string? flightString = Console.ReadLine();
+            int flightiD;
+            while (!Int32.TryParse(flightString, out flightiD))
             {
                 Console.WriteLine("Please input a Flight ID");
-                flightiD = Console.ReadLine();
+                flightString = Console.ReadLine();
             }
-            // Check if flightID exists in Transactions table
-            bool flightExists = false;
-            bool isCard = false;
-            string? userID = "";
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
+
+
                 sqlConn.Open();
-                string queryString = $"SELECT UserID, IsCard FROM Transactions WHERE FlightID = '{flightiD}'";
+                string queryString = $"SELECT * FROM Flights WHERE FlightID = '{flightiD}'";
                 SqlCommand query = new SqlCommand(queryString, sqlConn);
-                using (SqlDataReader reader = query.ExecuteReader())
+                SqlDataReader reader = query.ExecuteReader();
+                if (reader.Read())
                 {
-                    if (reader.Read())
-                    {
-                        userID = reader.GetValue(0).ToString();
-                        isCard = reader.GetBoolean(1);
-                        flightExists = true;
-                    }
+                    DateTime departureTime = (DateTime)reader["DepartureDateTime"];
+                    DateTime currentTime = DateTime.Now;
                     reader.Close();
-                }
-                sqlConn.Close();
-                if (flightExists)
-                {
-                    sqlConn.Open();
-                    queryString = $"SELECT * FROM Flights WHERE FlightID = '{flightiD}'";
-                    query = new SqlCommand(queryString, sqlConn);
-                    SqlDataReader reader = query.ExecuteReader();
-                    if (reader.Read())
+                    if (departureTime.Subtract(currentTime).TotalHours >= 1)
                     {
-                        DateTime departureTime = (DateTime)reader["DepartureDateTime"];
-                        DateTime currentTime = DateTime.Now;
+                        RefundCancelledFlight(flightiD);
+                        // Mark flight as refunded in Transactions table            
+                        string updateString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightiD}' AND UserID = '{CurUser.UserID}'";
+                        SqlCommand update = new SqlCommand(updateString, sqlConn);
+                        update.ExecuteNonQuery();
+                        string updateSeatsQueryString = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable + 1 WHERE FlightID = {flightiD}";
+                        SqlCommand updateSeatsQuery = new SqlCommand(updateSeatsQueryString, sqlConn);
+                        updateSeatsQuery.ExecuteNonQuery();
                         reader.Close();
-                        if (departureTime.Subtract(currentTime).TotalHours >= 1)
-                        {
-                            Flights.RefundFlight(flightiD, isCard);
-                            // Mark flight as refunded in Transactions table               
-                            string updateString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightiD}' AND UserID = '{userID}'";
-                            SqlCommand update = new SqlCommand(updateString, sqlConn);
-                            update.ExecuteNonQuery();
-                            string updateSeatsQueryString = $"UPDATE Flights SET SeatsAvailable = SeatsAvailable + 1 WHERE FlightID = {flightiD}";
-                            SqlCommand updateSeatsQuery = new SqlCommand(updateSeatsQueryString, sqlConn);
-                            updateSeatsQuery.ExecuteNonQuery();
-                            reader.Close();
-                        }
-                        else
-                        {
-                            Console.WriteLine("Error: Flight cannot be cancelled as it is less than 1 hour to the departure time.");
-                        }
                     }
-                    sqlConn.Close();
-                }
-                else
-                {
-                    Console.WriteLine("Sorry, the specified flight ID does not exist.");
+                    else
+                    {
+                        Console.WriteLine("Error: Flight cannot be cancelled as it is less than 1 hour to the departure time.");
+                    }
                 }
                 sqlConn.Close();
             }
         }
-        public static void DisplayFlightHistory(string username)
+
+        public void RefundCancelledFlight(int flightID)
+        {
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
+                sqlConn.Open();
+                // Get the user ID and payment amount for the transaction associated with this flight
+                string transactionQueryString = $"SELECT UserID, AmountCharged, IsRefunded, IsCard, TransactionID FROM Transactions WHERE FlightID = {flightID}";
+                SqlCommand transactionQuery = new SqlCommand(transactionQueryString, sqlConn);
+                SqlDataReader transactionReader = transactionQuery.ExecuteReader();
+                transactionReader.Read();
+                decimal paymentAmount = (int)transactionReader["AmountCharged"];
+                int transactionID = (int)transactionReader["TransactionID"];
+                bool isRefunded = transactionReader.GetBoolean(2);
+                bool isCard = transactionReader.GetBoolean(3);
+                transactionReader.Close();
+                if (paymentAmount != -1 && isRefunded != true && transactionID != -1)
+                {
+                    // Refund the payment to the user
+                    if (isCard)
+                    {
+                        // deletes the Card Charge from our table, this is how to "refund card"
+                        string refundCardQueryString = $"DELETE FROM CardCharges WHERE UserID = {CurUser.UserID} AND TransactionID = {transactionID}";
+                        SqlCommand refundCardQuery = new SqlCommand(refundCardQueryString, sqlConn);
+                        refundCardQuery.ExecuteNonQuery();
+                        Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {CurUser.UserID} at original payment");
+                    }
+                    else
+                    {
+                        string refundQueryString = $"UPDATE Users SET PointsAvailable = PointsAvailable + {paymentAmount} WHERE UserID = {CurUser.UserID}";
+                        SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
+                        refundQuery.ExecuteNonQuery();
+                        Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount}, points has been issued to user {CurUser.UserID}'s account\n");
+                    }
+                    // Mark the transaction as refunded
+                    string markAsRefundedQueryString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightID}' AND UserID = '{CurUser.UserID}'";
+                    SqlCommand markAsRefundedQuery = new SqlCommand(markAsRefundedQueryString, sqlConn);
+                    markAsRefundedQuery.ExecuteNonQuery();
+                }
+                else if (isRefunded == true)
+                {
+                    Console.WriteLine($"The transaction associated with flight {flightID} has already been canceled and refunded.\n");
+                }
+                else
+                {
+                    Console.WriteLine($"No transaction found for flight {flightID}\n");
+                }
+                sqlConn.Close();
+            }
+        }
+        public void DisplayFlightHistory(string username)
         {
             Console.WriteLine("Flight History: ");
             Console.WriteLine("...............");
@@ -448,7 +511,43 @@ namespace Air3550
                 string queryString = $"SELECT Flights.FlightID, Flights.OriginCity, Flights.DestinationCity, Flights.DepartureDateTime, Flights.ArrivalDateTime, Transactions.IsRefunded " +
                                     $"FROM Transactions " +
                                     $"JOIN Flights ON Transactions.FlightID = Flights.FlightID " +
-                                    $"WHERE Transactions.UserID = {username}";
+                                    $"WHERE Transactions.UserID = {username} AND Flights.ArrivalDateTime < \'{new SqlDateTime(DateTime.Now)}\'";
+                SqlCommand query = new SqlCommand(queryString, sqlConn);
+                using (SqlDataReader reader = query.ExecuteReader())
+                    while (reader.Read())
+                    {
+                        hasFlightHistory = true;
+                        Console.WriteLine($"Flight Number: {reader["FlightID"]}");
+                        Console.WriteLine($"Origin Airport: {reader["OriginCity"]}");
+                        Console.WriteLine($"Destination Airport: {reader["DestinationCity"]}");
+                        Console.WriteLine($"Departure Date Time: {reader["DepartureDateTime"]}");
+                        Console.WriteLine($"Arrival Date Time: {reader["ArrivalDateTime"]}");
+
+                        if (reader["IsRefunded"] != DBNull.Value && (bool)reader["IsRefunded"])
+                        {
+                            Console.WriteLine("This flight is INACTIVE. A refund has been processed for this flight\n");
+                        }
+                    }
+                sqlConn.Close();
+            }
+            if (!hasFlightHistory)
+            {
+                Console.WriteLine("No flight history found for the given user.");
+            }
+        }
+        public void DisplayUpcomingFlights(string username)
+        {
+            Console.WriteLine("Flight History: ");
+            Console.WriteLine("...............");
+            bool hasFlightHistory = false;
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
+
+                sqlConn.Open();
+                string queryString = $"SELECT Flights.FlightID, Flights.OriginCity, Flights.DestinationCity, Flights.DepartureDateTime, Flights.ArrivalDateTime, Transactions.IsRefunded " +
+                                    $"FROM Transactions " +
+                                    $"JOIN Flights ON Transactions.FlightID = Flights.FlightID " +
+                                    $"WHERE Transactions.UserID = {username} AND Flights.DepartureDateTime > \'{new SqlDateTime(DateTime.Now)}\'";
                 SqlCommand query = new SqlCommand(queryString, sqlConn);
                 using (SqlDataReader reader = query.ExecuteReader())
                     while (reader.Read())

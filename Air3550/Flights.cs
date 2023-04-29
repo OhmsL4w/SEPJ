@@ -5,10 +5,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Linq;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Air3550
 {
@@ -218,14 +216,11 @@ namespace Air3550
                     {
                         Console.WriteLine("What would you like to change?");
                         Console.WriteLine("1. Flight Number");
-                        Console.WriteLine("2. Origin Airport");
-                        Console.WriteLine("3. Destination Airport");
-                        Console.WriteLine("4. Price");
-                        Console.WriteLine("5. Departure Date Time");
-                        Console.WriteLine("6. Arrival Date Time");
+                        Console.WriteLine("2. Departure Date Time");
+                        Console.WriteLine("3. Arrival Date Time");
                         Console.WriteLine("Q. Quit");
                         input = Console.ReadLine();
-                        if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "5" & input != "6" & input != "Q"))
+                        if (input == null | (input != "1" & input != "2" & input != "3" & input != "Q"))
                         {
                             Console.WriteLine("Please input a correct input");
                             continue;
@@ -259,68 +254,6 @@ namespace Air3550
                                 }
                                 break;
                             case "2":
-                                Console.WriteLine("Input a new Origin Airport");
-                                string? noa = Console.ReadLine();
-                                while (noa == null | noa?.Length != 3)
-                                {
-                                    Console.WriteLine("Input a correct airport code please");
-
-                                    Console.WriteLine("Input a new Airport Code");
-                                    noa = Console.ReadLine();
-                                }
-                                qs = $"UPDATE Flights SET OriginCity = \'{noa}\' WHERE FlightID = {flight}";
-                                q = new SqlCommand(qs, sqlConn);
-                                rows = q.ExecuteNonQuery();
-                                if (rows > 0)
-                                {
-                                    Console.WriteLine($"Successfully updated flight: {flight}");
-                                }
-                                break;
-                            case "3":
-                                Console.WriteLine("Input a new Destination Airport");
-                                string? nda = Console.ReadLine();
-                                while (nda == null | nda?.Length != 3)
-                                {
-                                    Console.WriteLine("Input a correct airport code please");
-
-                                    Console.WriteLine("Input a new Airport Code");
-                                    nda = Console.ReadLine();
-                                }
-                                qs = $"UPDATE Flights SET DestinationCity = \'{nda}\' WHERE FlightID = {flight}";
-                                q = new SqlCommand(qs, sqlConn);
-                                rows = q.ExecuteNonQuery();
-                                if (rows > 0)
-                                {
-                                    Console.WriteLine($"Successfully updated flight: {flight}");
-                                }
-                                break;
-                            case "4":
-                                Console.WriteLine("Input a new Price (xx.xx)");
-                                string? nps = Console.ReadLine();
-                                decimal np;
-                                while (true)
-                                {
-                                    if (!decimal.TryParse(nps, out np))
-                                    {
-                                        Console.WriteLine("Could not parse the decimal!");
-                                        Console.WriteLine("Input a correct Price please");
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                    Console.WriteLine("Input a new Price (xx.xx)");
-                                    nps = Console.ReadLine();
-                                }
-                                qs = $"UPDATE Flights SET Price = {np} WHERE FlightID = {flight}";
-                                q = new SqlCommand(qs, sqlConn);
-                                rows = q.ExecuteNonQuery();
-                                if (rows > 0)
-                                {
-                                    Console.WriteLine($"Successfully updated flight: {flight}");
-                                }
-                                break;
-                            case "5":
                                 Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
                                 string? ndds = Console.ReadLine();
                                 DateTime ndd;
@@ -336,7 +269,7 @@ namespace Air3550
                                         break;
                                     }
                                     Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
-                                    nps = Console.ReadLine();
+                                    ndds = Console.ReadLine();
                                 }
                                 SqlDateTime sqlndd = new SqlDateTime(ndd.Year, ndd.Month, ndd.Day, ndd.Hour, ndd.Minute, ndd.Second);
                                 qs = $"UPDATE Flights SET DepartureDateTime = \'{sqlndd}\' WHERE FlightID = {flight}";
@@ -347,8 +280,8 @@ namespace Air3550
                                     Console.WriteLine($"Successfully updated flight: {flight}");
                                 }
                                 break;
-                            case "6":
-                                Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
+                            case "3":
+                                Console.WriteLine("Input a new Arrival Date (mm/dd/yyyy HH:MM:SS)");
                                 string? nads = Console.ReadLine();
                                 DateTime nad;
                                 while (true)
@@ -356,17 +289,17 @@ namespace Air3550
                                     if (!DateTime.TryParse(nads, out nad))
                                     {
                                         Console.WriteLine("Could not parse the date and time!");
-                                        Console.WriteLine("Input a correct Date and time in the format given no paranthesis please");
+                                        Console.WriteLine("Input a correct Date and time in the format given no parenthesis please");
                                     }
                                     else
                                     {
                                         break;
                                     }
-                                    Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
-                                    nps = Console.ReadLine();
+                                    Console.WriteLine("Input a new Arrival Date (mm/dd/yyyy HH:MM:SS)");
+                                    nads = Console.ReadLine();
                                 }
                                 SqlDateTime sqlnad = new SqlDateTime(nad.Year, nad.Month, nad.Day, nad.Hour, nad.Minute, nad.Second);
-                                qs = $"UPDATE Flights SET DepartureDateTime = \'{sqlnad}\' WHERE FlightID = {flight}";
+                                qs = $"UPDATE Flights SET ArrivalDateTime = \'{sqlnad}\' WHERE FlightID = {flight}";
                                 q = new SqlCommand(qs, sqlConn);
                                 rows = q.ExecuteNonQuery();
                                 if (rows > 0)
@@ -407,14 +340,11 @@ namespace Air3550
                     {
                         Console.WriteLine("What would you like to change?");
                         Console.WriteLine("1. Flight Number");
-                        Console.WriteLine("2. Origin Airport");
-                        Console.WriteLine("3. Destination Airport");
-                        Console.WriteLine("4. Price");
-                        Console.WriteLine("5. Departure Date Time");
-                        Console.WriteLine("6. Arrival Date Time");
+                        Console.WriteLine("2. Departure Date Time");
+                        Console.WriteLine("3. Arrival Date Time");
                         Console.WriteLine("Q. Quit");
                         input = Console.ReadLine();
-                        if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "5" & input != "6" & input != "Q"))
+                        if (input == null | (input != "1" & input != "2" & input != "3" & input != "Q"))
                         {
                             Console.WriteLine("Please input a correct input");
                             continue;
@@ -448,68 +378,6 @@ namespace Air3550
                                 }
                                 break;
                             case "2":
-                                Console.WriteLine("Input a new Origin Airport");
-                                string? noa = Console.ReadLine();
-                                while (noa == null | noa?.Length != 3)
-                                {
-                                    Console.WriteLine("Input a correct airport code please");
-
-                                    Console.WriteLine("Input a new Airport Code");
-                                    noa = Console.ReadLine();
-                                }
-                                qs = $"UPDATE Flights SET OriginCity = \'{noa}\' WHERE FlightNumber = {flight}";
-                                q = new SqlCommand(qs, sqlConn);
-                                rows = q.ExecuteNonQuery();
-                                if (rows > 0)
-                                {
-                                    Console.WriteLine($"Successfully updated flight: {flight}");
-                                }
-                                break;
-                            case "3":
-                                Console.WriteLine("Input a new Destination Airport");
-                                string? nda = Console.ReadLine();
-                                while (nda == null | nda?.Length != 3)
-                                {
-                                    Console.WriteLine("Input a correct airport code please");
-
-                                    Console.WriteLine("Input a new Airport Code");
-                                    nda = Console.ReadLine();
-                                }
-                                qs = $"UPDATE Flights SET DestinationCity = \'{nda}\' WHERE FlightNumber = {flight}";
-                                q = new SqlCommand(qs, sqlConn);
-                                rows = q.ExecuteNonQuery();
-                                if (rows > 0)
-                                {
-                                    Console.WriteLine($"Successfully updated flight: {flight}");
-                                }
-                                break;
-                            case "4":
-                                Console.WriteLine("Input a new Price (xx.xx)");
-                                string? nps = Console.ReadLine();
-                                decimal np;
-                                while (true)
-                                {
-                                    if (!decimal.TryParse(nps, out np))
-                                    {
-                                        Console.WriteLine("Could not parse the decimal!");
-                                        Console.WriteLine("Input a correct Price please");
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                    Console.WriteLine("Input a new Price (xx.xx)");
-                                    nps = Console.ReadLine();
-                                }
-                                qs = $"UPDATE Flights SET Price = {np} WHERE FlightNumber = {flight}";
-                                q = new SqlCommand(qs, sqlConn);
-                                rows = q.ExecuteNonQuery();
-                                if (rows > 0)
-                                {
-                                    Console.WriteLine($"Successfully updated flight: {flight}");
-                                }
-                                break;
-                            case "5":
                                 Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
                                 string? ndds = Console.ReadLine();
                                 DateTime ndd;
@@ -525,7 +393,7 @@ namespace Air3550
                                         break;
                                     }
                                     Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
-                                    nps = Console.ReadLine();
+                                    ndds = Console.ReadLine();
                                 }
                                 SqlDateTime sqlndd = new SqlDateTime(ndd.Year, ndd.Month, ndd.Day, ndd.Hour, ndd.Minute, ndd.Second);
                                 qs = $"UPDATE Flights SET DepartureDateTime = \'{sqlndd}\' WHERE FlightNumber = {flight}";
@@ -536,8 +404,8 @@ namespace Air3550
                                     Console.WriteLine($"Successfully updated flight: {flight}\n");
                                 }
                                 break;
-                            case "6":
-                                Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
+                            case "3":
+                                Console.WriteLine("Input a new Arrival Date (mm/dd/yyyy HH:MM:SS)");
                                 string? nads = Console.ReadLine();
                                 DateTime nad;
                                 while (true)
@@ -545,17 +413,17 @@ namespace Air3550
                                     if (!DateTime.TryParse(nads, out nad))
                                     {
                                         Console.WriteLine("Could not parse the date and time!");
-                                        Console.WriteLine("Input a correct Date and time in the format given no paranthesis please");
+                                        Console.WriteLine("Input a correct Date and time in the format given no parenthesis please");
                                     }
                                     else
                                     {
                                         break;
                                     }
-                                    Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
-                                    nps = Console.ReadLine();
+                                    Console.WriteLine("Input a new Arrival Date (mm/dd/yyyy HH:MM:SS)");
+                                    nads = Console.ReadLine();
                                 }
                                 SqlDateTime sqlnad = new SqlDateTime(nad.Year, nad.Month, nad.Day, nad.Hour, nad.Minute, nad.Second);
-                                qs = $"UPDATE Flights SET DepartureDateTime = \'{sqlnad}\' WHERE FlightNumber = {flight}";
+                                qs = $"UPDATE Flights SET ArrivalDateTime = \'{sqlnad}\' WHERE FlightNumber = {flight}";
                                 q = new SqlCommand(qs, sqlConn);
                                 rows = q.ExecuteNonQuery();
                                 if (rows > 0)
@@ -574,7 +442,7 @@ namespace Air3550
         public void AddFlight()
         {
             Console.WriteLine("Please enter all of the information");
-            Console.WriteLine("Input a new Flight Number");
+            Console.WriteLine("Input a Flight Number");
             string? nfns = Console.ReadLine();
             int nfn;
             while (true)
@@ -588,48 +456,47 @@ namespace Air3550
                 {
                     break;
                 }
-                Console.WriteLine("Input a new Flight Number");
+                Console.WriteLine("Input a Flight Number");
                 nfns = Console.ReadLine();
             }
-
-            Console.WriteLine("Input a new Origin Airport");
-            string? noa = Console.ReadLine();
-            while (noa == null | noa?.Length != 3)
+            string? noa;
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
-                Console.WriteLine("Input a correct airport code please");
-
-                Console.WriteLine("Input a new Airport Code");
-                noa = Console.ReadLine();
-            }
-            Console.WriteLine("Input a new Destination Airport");
-            string? nda = Console.ReadLine();
-            while (nda == null | nda?.Length != 3)
-            {
-                Console.WriteLine("Input a correct airport code please");
-
-                Console.WriteLine("Input a new Airport Code");
-                nda = Console.ReadLine();
-            }
-
-            Console.WriteLine("Input a new Price (xx.xx)");
-            string? nps = Console.ReadLine();
-            decimal np;
-            while (true)
-            {
-                if (!decimal.TryParse(nps, out np))
+                sqlConn.Open();
+                do
                 {
-                    Console.WriteLine("Could not parse the decimal!");
-                    Console.WriteLine("Input a correct Price please");
-                }
-                else
+                    Console.WriteLine("Input a Origin Airport");
+                    noa = Console.ReadLine();
+                    string queryString = $"SELECT * FROM Airports WHERE Code=\'{noa}\'";
+                    SqlCommand query = new SqlCommand(queryString, sqlConn);
+                    SqlDataReader airports = query.ExecuteReader();
+                    if (airports.HasRows)
+                    {
+                        break;
+                    }
+                } while (true);
+                sqlConn.Close();
+            }
+            string? nda;
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
+                sqlConn.Open();
+                do
                 {
-                    break;
-                }
-                Console.WriteLine("Input a new Price (xx.xx)");
-                nps = Console.ReadLine();
+                    Console.WriteLine("Input a Destination Airport");
+                    nda = Console.ReadLine();
+                    string queryString = $"SELECT * FROM Airports WHERE Code=\'{nda}\'";
+                    SqlCommand query = new SqlCommand(queryString, sqlConn);
+                    SqlDataReader airports = query.ExecuteReader();
+                    if (airports.HasRows)
+                    {
+                        break;
+                    }
+                } while (true);
+                sqlConn.Close();
             }
 
-            Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
+            Console.WriteLine("Input a Departure Date (mm/dd/yyyy HH:MM:SS)");
             string? ndds = Console.ReadLine();
             DateTime ndd;
             while (true)
@@ -643,12 +510,12 @@ namespace Air3550
                 {
                     break;
                 }
-                Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
+                Console.WriteLine("Input a Departure Date (mm/dd/yyyy HH:MM:SS)");
                 ndds = Console.ReadLine();
             }
             SqlDateTime sqlndd = new SqlDateTime(ndd.Year, ndd.Month, ndd.Day, ndd.Hour, ndd.Minute, ndd.Second);
-
-            Console.WriteLine("Input a new Arrival Date and Time (mm/dd/yyyy HH:MM:SS)");
+            
+            Console.WriteLine("Input an Arrival Date and Time (mm/dd/yyyy HH:MM:SS)");
             string? nads = Console.ReadLine();
             DateTime nad;
             while (true)
@@ -656,37 +523,265 @@ namespace Air3550
                 if (!DateTime.TryParse(nads, out nad))
                 {
                     Console.WriteLine("Could not parse the date and time!");
-                    Console.WriteLine("Input a correct Date and time in the format given no paranthesis please");
+                    Console.WriteLine("Input a correct Date and time in the format given no parenthesis please");
+                }
+                else if(nad < ndd)
+                {
+                    Console.WriteLine("You have to input an arrival time after the departure date!");
                 }
                 else
                 {
                     break;
                 }
-                Console.WriteLine("Input a new Departure Date (mm/dd/yyyy HH:MM:SS)");
+                Console.WriteLine("Input an Arrival Date (mm/dd/yyyy HH:MM:SS)");
                 nads = Console.ReadLine();
             }
 
-            SqlDateTime sqlnad = new SqlDateTime(nad.Year, nad.Month, nad.Day, nad.Hour, nad.Minute, nad.Second);
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
                 sqlConn.Open();
-                DateTime endDate = DateTime.Now.AddMonths(6);
+                // first find the distance of the two airports to be able to get the price
+                string distanceQuery = $"SELECT Distance FROM Distances WHERE (AirportA = \'{noa}\' AND AirportB = \'{nda}\') OR (AirportA = \'{nda}\' AND AirportB = \'{noa}\')";
+                SqlCommand distanceCommand = new SqlCommand(distanceQuery, sqlConn);
+                SqlDataReader distanceReader = distanceCommand.ExecuteReader();
+                if (!distanceReader.HasRows)
+                {
+                    Console.WriteLine("Could not find airports distances!");
+                    return;
+                }
+                List<int> distances = new List<int>();
+                while(distanceReader.Read())
+                {
+                    distances.Add(distanceReader.GetInt32(0));
+                }
+                distanceReader.Close();
+                decimal np = 50M;
+                // the only flight that needs a connection is anything to LAX, first must go to MSP or DEN
+                string? con = null;
+                decimal npc1 = new();
+                decimal npc2 = new();
+                DateTime conDeptDate = new();
+                DateTime conArrDate = new();
+                if (distances.ElementAt(0) > 1550)
+                {
+                    // needs a connection flight
+                    string connectionQuery = $"SELECT Distance FROM Distances WHERE (AirportA = \'DEN\' AND AirportB = \'{nda}\') OR (AirportA = \'{nda}\' AND AirportB = \'DEN\') OR (AirportA = 'DEN' AND AirportB = '{noa}') OR (AirportA = '{noa}' AND AirportB = 'DEN')";
+                    SqlCommand connectionCommand = new SqlCommand(connectionQuery, sqlConn);
+                    SqlDataReader connectionReader = connectionCommand.ExecuteReader();
+                    if (!connectionReader.HasRows)
+                    {
+                        Console.WriteLine("Could not find airports distances!");
+                        return;
+                    }
+                    bool allowDEN = true;
+                    while (connectionReader.Read())
+                    {
+                        distances.Add(connectionReader.GetInt32(0));
+                    }
+                    connectionReader.Close();
+                    for (int i = 1; i < distances.Count; i++)
+                    {
+                        if (distances.ElementAt(i) > 1550)
+                        {
+                            allowDEN = false;
+                        }
+                    }
+
+                    if (allowDEN)
+                    {
+                        do
+                        {
+                            Console.WriteLine("Choose a connection airport, MSP or DEN");
+                            con = Console.ReadLine();
+                            if (con == "MSP" | con == "DEN") break;
+                        } while (true);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Must have MSP be connection to the flight since it is too long");
+                        con = "MSP";
+                    }
+                    connectionQuery = $"SELECT Distance FROM Distances WHERE (AirportA = \'MSP\' AND AirportB = \'{nda}\') OR (AirportA = \'{nda}\' AND AirportB = \'MSP\') OR (AirportA = 'MSP' AND AirportB = '{noa}') OR (AirportA = '{noa}' AND AirportB = 'MSP')";
+                    connectionCommand = new SqlCommand(connectionQuery, sqlConn);
+                    connectionReader = connectionCommand.ExecuteReader();
+                    if (!connectionReader.HasRows)
+                    {
+                        Console.WriteLine("Could not find airports distances!");
+                        return;
+                    }
+                    while (connectionReader.Read())
+                    {
+                        distances.Add(connectionReader.GetInt32(0));
+                    }
+                    connectionReader.Close();
+                    decimal firstConPrice;
+                    decimal secondConPrice;
+                    if (con == "DEN")
+                    {
+                        firstConPrice = new decimal(distances.ElementAt(1) * 0.12);
+                        npc1 = firstConPrice;
+                        secondConPrice = new decimal(distances.ElementAt(2) * 0.12);
+                        npc2 = secondConPrice;
+                    }
+                    else
+                    {
+                        firstConPrice = new decimal(distances.ElementAt(3) * 0.12);
+                        npc1 = firstConPrice;
+                        secondConPrice = new decimal(distances.ElementAt(4) * 0.12);
+                        npc2 = secondConPrice;
+                    }
+                    np = decimal.Add(np, firstConPrice);
+                    np = decimal.Add(np, secondConPrice);
+                    npc1 = decimal.Add(npc1, new decimal(8));
+                    npc2 = decimal.Add(npc2, new decimal(8));
+                    np = decimal.Add(np, new decimal(8)); // 8 dollar segment fee for first flight
+                    np = decimal.Add(np, new decimal(8)); // 8 dollar segment fee for connection flight
+
+                    // connection flight dates and times
+                    Console.WriteLine("Input an Arrival Date and Time (mm/dd/yyyy HH:MM:SS) for the first flight");
+                    string? cads = Console.ReadLine();
+                    while (true)
+                    {
+                        if (!DateTime.TryParse(cads, out conArrDate))
+                        {
+                            Console.WriteLine("Could not parse the date and time!");
+                            Console.WriteLine("Input a correct Date and time in the format given no paranthesis please");
+                        }
+                        else
+                        {
+                            break;
+                        }
+                        Console.WriteLine("Input an Arrival Date (mm/dd/yyyy HH:MM:SS) for the first flight");
+                        nads = Console.ReadLine();
+                    }
+                    Console.WriteLine("Input a Departure Date and Time (mm/dd/yyyy HH:MM:SS) for the second flight");
+                    string? cdds = Console.ReadLine();
+                    while (true)
+                    {
+                        if (!DateTime.TryParse(cdds, out conDeptDate))
+                        {
+                            Console.WriteLine("Could not parse the date and time!");
+                            Console.WriteLine("Input a correct Date and time in the format given no paranthesis please");
+                        }
+                        else if((conDeptDate - conArrDate).TotalMinutes < 40)
+                        {
+                            Console.WriteLine("Connecting flights must at least be 40 minutes after arrival of the first flight!");
+                        }
+                        else
+                        {
+                            break;
+                        }
+                        Console.WriteLine("Input a Departure Date (mm/dd/yyyy HH:MM:SS) for the second flight");
+                        nads = Console.ReadLine();
+                    }
+                    // determine the new arrival time
+                    Console.WriteLine("Input an Arrival Date and Time (mm/dd/yyyy HH:MM:SS) for the entire trip");
+                    nads = Console.ReadLine();
+                    while (true)
+                    {
+                        if (!DateTime.TryParse(nads, out nad))
+                        {
+                            Console.WriteLine("Could not parse the date and time!");
+                            Console.WriteLine("Input a correct Date and time in the format given no paranthesis please");
+                        }
+                        else
+                        {
+                            break;
+                        }
+                        Console.WriteLine("Input an Arrival Date (mm/dd/yyyy HH:MM:SS) for the entire trip");
+                        nads = Console.ReadLine();
+                    }
+                }
+                else
+                {
+                    // just a normal flight with a distance
+                    decimal milesAdded = new decimal(distances.ElementAt(0) * 0.12);
+                    np = decimal.Add(np, milesAdded);
+                    np = decimal.Add(np, new decimal(8)); // 8 dollar segment fee
+                }
+                // check the timing of the flights
+                if (ndd.Hour < 8 & ndd.Hour > 5)
+                {
+                    // off-peak discount
+                    np = decimal.Multiply(np, new decimal(.90));
+                }
+                else if (ndd.Hour < 5)
+                {
+                    // red-eye discount
+                    np = decimal.Multiply(np, new decimal(.80));
+                }
+                // check the timing of the flights
+                if (con != null & conArrDate.Hour < 8 & conArrDate.Hour > 5)
+                {
+                    // off-peak discount
+                    npc1 = decimal.Multiply(np, new decimal(.90));
+                }
+                else if (con != null & conArrDate.Hour < 5)
+                {
+                    // red-eye discount
+                    np = decimal.Multiply(np, new decimal(.80));
+                }
+                if (con != null & conDeptDate.Hour < 8 & conDeptDate.Hour > 5)
+                {
+                    // off-peak discount
+                    npc2 = decimal.Multiply(np, new decimal(.90));
+                }
+                else if (con != null & conDeptDate.Hour < 5)
+                {
+                    // red-eye discount
+                    np = decimal.Multiply(np, new decimal(.80));
+                }
+                DateTime endDate = DateTime.Now.AddMonths(7);
                 DateTime departureDate = ndd;
+                DateTime arrivalDate = nad;
                 while (departureDate <= endDate)
                 {
-                    departureDate = departureDate.AddDays(7);
 
                     SqlDateTime sqlDepartureDate = new SqlDateTime(departureDate.Year, departureDate.Month, departureDate.Day, departureDate.Hour, departureDate.Minute, departureDate.Second);
-                    SqlDateTime sqlArrivalDate = new SqlDateTime(departureDate.Year, departureDate.Month, departureDate.Day, nad.Hour, nad.Minute, nad.Second);
-
+                    SqlDateTime sqlArrivalDate = new SqlDateTime(arrivalDate.Year, arrivalDate.Month, arrivalDate.Day, arrivalDate.Hour, arrivalDate.Minute, arrivalDate.Second);
+                    // connection flights
+                    SqlDateTime sqlConArrDate = new SqlDateTime();
+                    SqlDateTime sqlConDeptDate = new SqlDateTime();
+                    if(con != null)
+                    {
+                        sqlConArrDate = new SqlDateTime(conArrDate.Year, conArrDate.Month, conArrDate.Day, conArrDate.Hour, conArrDate.Minute, conArrDate.Second);
+                        sqlConDeptDate = new SqlDateTime(conDeptDate.Year, conDeptDate.Month, conDeptDate.Day, conDeptDate.Hour, conDeptDate.Minute, conDeptDate.Second);
+                    }
+                    int? conFlightID1 = null;
+                    int? conFlightID2 = null;
+                    if (con != null) // has a connection flight so create the connection first then link them to the main flight
+                    {
+                        // first flight
+                        string conQueryString = $"INSERT INTO Flights (FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime) OUTPUT INSERTED.FlightID " +
+                        $"VALUES ({nfn + 1}, \'{noa}\', \'{con}\', {npc1}, \'{sqlDepartureDate}\', \'{sqlConArrDate}\')";
+                        SqlCommand conQuery = new SqlCommand(conQueryString, sqlConn);
+                        conFlightID1 = (int)conQuery.ExecuteScalar();
+                        // second flight
+                        conQueryString = $"INSERT INTO Flights (FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime) OUTPUT INSERTED.FlightID " +
+                        $"VALUES ({nfn + 2}, \'{con}\', \'{nda}\', {npc2}, \'{sqlConDeptDate}\', \'{sqlArrivalDate}\')";
+                        conQuery = new SqlCommand(conQueryString, sqlConn);
+                        conFlightID2 = (int)conQuery.ExecuteScalar();
+                    }
+                    // input the connected flight 
                     string queryString = $"INSERT INTO Flights (FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime)" +
                     $"VALUES ({nfn}, \'{noa}\', \'{nda}\', {np}, \'{sqlDepartureDate}\', \'{sqlArrivalDate}\')";
+                    if(con != null)
+                    {
+                        queryString = $"INSERT INTO Flights (FlightNumber, OriginCity, DestinationCity, Price, DepartureDateTime, ArrivalDateTime, FirstConFlight, SecondConFlight, ConCity)" +
+                        $"VALUES ({nfn}, \'{noa}\', \'{nda}\', {np}, \'{sqlDepartureDate}\', \'{sqlArrivalDate}\', {conFlightID1}, {conFlightID2}, \'{con}\')";
+                    }
                     SqlCommand query = new SqlCommand(queryString, sqlConn);
                     int rows = query.ExecuteNonQuery();
+
+                    // add these flights every week
+                    departureDate = departureDate.AddDays(7);
+                    arrivalDate = arrivalDate.AddDays(7);
+                    conArrDate = conArrDate.AddDays(7);
+                    conDeptDate = conDeptDate.AddDays(7);
                 }
+                Console.WriteLine("Flights added for the next 6 months!");
                 sqlConn.Close();
             }
-            Console.WriteLine("Flights added for the next 6 months!\n");
         }
 
         public void DeleteFlight()
@@ -712,46 +807,47 @@ namespace Air3550
             if (flightID)
             {
                 Console.WriteLine("Input a Flight ID");
-                string? flight = Console.ReadLine();
-                while (flight == null)
+                string? flightString = Console.ReadLine();
+                int flight;
+                while (!Int32.TryParse(flightString, out flight))
                 {
                     Console.WriteLine("Please input a Flight ID");
-                    flight = Console.ReadLine();
+                    flightString = Console.ReadLine();
                 }
                 using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
                 {
                     // get value of isCard
                     sqlConn.Open();
-                    string queryString = $"SELECT TOP 1 IsCard FROM Transactions WHERE FlightID = '{flight}' ORDER BY TransactionID DESC";
-                    SqlCommand query = new SqlCommand(queryString, sqlConn);
-                    SqlDataReader reader = query.ExecuteReader();
-                    bool isCard = false;
-                    if (reader.Read())
-                    {
-                        isCard = reader.GetBoolean(0);
-                    }
-                    reader.Close();
-                    sqlConn.Close();
+                    //string queryString = $"SELECT TOP 1 IsCard FROM Transactions WHERE FlightID = '{flight}' ORDER BY TransactionID DESC";
+                    //SqlCommand query = new SqlCommand(queryString, sqlConn);
+                    //SqlDataReader reader = query.ExecuteReader();
+                    //bool isCard = false;
+                    //if (reader.Read())
+                    //{
+                    //    isCard = reader.GetBoolean(0);
+                    //}
+                    //reader.Close();
+                    //sqlConn.Close();
 
                     //check flight's date and only refund to flight after the date of delete
                     sqlConn.Open();
-                    queryString = $"SELECT * FROM Flights WHERE FlightID = '{flight}'";
-                    query = new SqlCommand(queryString, sqlConn);
-                    reader = query.ExecuteReader();
+                    string queryString = $"SELECT * FROM Flights WHERE FlightID = '{flight}'";
+                    SqlCommand query = new SqlCommand(queryString, sqlConn);
+                    SqlDataReader reader = query.ExecuteReader();
                     if (reader.Read())
                     {
                         DateTime departureTime = (DateTime)reader["DepartureDateTime"];
                         DateTime currentTime = DateTime.Now;
                         if (currentTime < departureTime)
                         {
-                            RefundFlight(flight, isCard);
+                            RefundFlight(flight);
                         }
                     }
                     reader.Close();
                     sqlConn.Close();
 
                     sqlConn.Open();
-                    //  queryString = $"DELETE Flights WHERE FlightID = {flight}";
+                    queryString = $"DELETE Flights WHERE FlightID = {flight}";
                     query = new SqlCommand(queryString, sqlConn);
                     int rows = query.ExecuteNonQuery();
                     if (rows > 0)
@@ -777,41 +873,17 @@ namespace Air3550
                     string queryString = $"SELECT FlightID FROM Flights WHERE FlightNumber = {flightNumber}";
                     SqlCommand query = new SqlCommand(queryString, sqlConn);
                     SqlDataReader reader = query.ExecuteReader();
-                    List<string?> flightIDs = new List<string?>();
+                    List<int> flightIDs = new List<int>();
                     while (reader.Read())
                     {
-                        flightIDs.Add(reader.GetValue(0).ToString());
+                        flightIDs.Add(reader.GetInt32(0));
                     }
                     reader.Close();
                     sqlConn.Close();
 
-                    // delete all flights with that flight number
-                    sqlConn.Open();
-                    // queryString = $"DELETE Flights WHERE FlightNumber = {flightNumber}";
-                    query = new SqlCommand(queryString, sqlConn);
-                    int rows = query.ExecuteNonQuery();
-                    if (rows > 0)
+                    // call Refund(int FlightID) on all flight IDs for that flight number
+                    foreach (int flightiD in flightIDs)
                     {
-                        Console.WriteLine($"Successfully deleted {rows} flights with flight number {flightNumber}!\n");
-                    }
-                    sqlConn.Close();
-
-                    // call Refund(string FlightID, bool IsCard) on all flight IDs for that flight number
-                    foreach (string? flightiD in flightIDs)
-                    {
-                        // get the IsCard value from the transactions table
-                        sqlConn.Open();
-                        queryString = $"SELECT IsCard FROM Transactions WHERE FlightID = {flightiD}";
-                        query = new SqlCommand(queryString, sqlConn);
-                        reader = query.ExecuteReader();
-                        bool isCard = false;
-                        if (reader.Read())
-                        {
-                            isCard = reader.GetBoolean(0);
-                        }
-                        reader.Close();
-                        sqlConn.Close();
-
                         //check flight's date and only refund to flight after the date of delete
                         sqlConn.Open();
                         queryString = $"SELECT * FROM Flights WHERE FlightID = '{flightiD}'";
@@ -823,64 +895,75 @@ namespace Air3550
                             DateTime currentTime = DateTime.Now;
                             if (currentTime < departureTime)
                             {
-                                RefundFlight(flightiD, isCard);
+                                RefundFlight(flightiD);
                             }
                         }
                         reader.Close();
                         sqlConn.Close();                                        
                     }
+
+                    // delete all flights with that flight number
+                    sqlConn.Open();
+                    queryString = $"DELETE Flights WHERE FlightNumber = {flightNumber}";
+                    query = new SqlCommand(queryString, sqlConn);
+                    int rows = query.ExecuteNonQuery();
+                    if (rows > 0)
+                    {
+                        Console.WriteLine($"Successfully deleted {rows} flights with flight number {flightNumber}!\n");
+                    }
+                    sqlConn.Close();
                 }
             }
         }
-        public static void RefundFlight(string flightID, bool isCard)
+        public void RefundFlight(int flightID)
         {
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
             {
                 sqlConn.Open();
                 // Get the user ID and payment amount for the transaction associated with this flight
-                string transactionQueryString = $"SELECT UserID, AmountCharged, IsRefunded FROM Transactions WHERE FlightID = {flightID}";
+                string transactionQueryString = $"SELECT UserID, AmountCharged, IsRefunded, IsCard, TransactionID FROM Transactions WHERE FlightID = {flightID}";
                 SqlCommand transactionQuery = new SqlCommand(transactionQueryString, sqlConn);
                 SqlDataReader transactionReader = transactionQuery.ExecuteReader();
-                int userID = -1;
-                decimal paymentAmount = -1;
-                bool? isRefunded = null;
-                if (transactionReader.Read())
+                while (transactionReader.Read())
                 {
-                    userID = (int)transactionReader["UserID"];
-                    paymentAmount = (int)transactionReader["AmountCharged"];
-                    if (!transactionReader.IsDBNull(transactionReader.GetOrdinal("IsRefunded")))
+                    int userID = (int)transactionReader["UserID"];
+                    decimal paymentAmount = (int)transactionReader["AmountCharged"];
+                    int transactionID = (int)transactionReader["TransactionID"];
+                    bool isRefunded = transactionReader.GetBoolean(2);
+                    bool isCard = transactionReader.GetBoolean(3);
+                    if (userID != -1 && paymentAmount != -1 && isRefunded != true && transactionID != -1)
                     {
-                        isRefunded = (bool)transactionReader["IsRefunded"];
+                        // Refund the payment to the user
+                        if (isCard)
+                        {
+                            // deletes the Card Charge from our table, this is how to "refund card"
+                            string refundCardQueryString = $"DELETE FROM CardCharges WHERE UserID = {userID} AND TransactionID = {transactionID}";
+                            SqlCommand refundCardQuery = new SqlCommand(refundCardQueryString, sqlConn);
+                            refundCardQuery.ExecuteNonQuery();
+                            Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {userID} at original payment");
+                        }
+                        else
+                        {
+                            string refundQueryString = $"UPDATE Users SET PointsAvailable = PointsAvailable + {paymentAmount} WHERE UserID = {userID}";
+                            SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
+                            refundQuery.ExecuteNonQuery();
+                            Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount}, points has been issued to user {userID}'s account\n");
+                        }
+                        // Mark the transaction as refunded
+                        string markAsRefundedQueryString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightID}' AND UserID = '{userID}'";
+                        SqlCommand markAsRefundedQuery = new SqlCommand(markAsRefundedQueryString, sqlConn);
+                        markAsRefundedQuery.ExecuteNonQuery();
                     }
-                }
-                transactionReader.Close();
-                if (userID != -1 && paymentAmount != -1 && isRefunded != true)
-                {
-                    // Refund the payment to the user
-                    if (isCard)
+                    else if (isRefunded == true)
                     {
-                        Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {userID} at original payment");
+                        Console.WriteLine($"The transaction associated with flight {flightID} has already been canceled and refunded.\n");
                     }
                     else
                     {
-                        string refundQueryString = $"UPDATE Users SET PointsAvailable = PointsAvailable + {paymentAmount} WHERE UserID = {userID}";
-                        SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
-                        refundQuery.ExecuteNonQuery();
-                        Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount}, points has been issued to user {userID}'s account\n");
+                        Console.WriteLine($"No transaction found for flight {flightID}\n");
                     }
-                    // Mark the transaction as refunded
-                    string markAsRefundedQueryString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightID}' AND UserID = '{userID}'";
-                    SqlCommand markAsRefundedQuery = new SqlCommand(markAsRefundedQueryString, sqlConn);
-                    markAsRefundedQuery.ExecuteNonQuery();
                 }
-                else if (isRefunded == true)
-                {
-                    Console.WriteLine($"The transaction associated with flight {flightID} has already been canceled and refunded.\n");
-                }
-                else
-                {
-                    Console.WriteLine($"No transaction found for flight {flightID}\n");
-                }
+                transactionReader.Close();
                 sqlConn.Close();
             }
         }
@@ -908,7 +991,7 @@ namespace Air3550
                 sqlConn.Close();
             }
         }
-        public static void ChoosePlanes()
+        public void ChoosePlanes()
         {
             Console.WriteLine("Enter flight number: ");
             string? flightNumber = Console.ReadLine();

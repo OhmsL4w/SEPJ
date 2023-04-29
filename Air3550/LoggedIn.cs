@@ -53,6 +53,46 @@ namespace Air3550
             }
         }
 
+        public void UpdateCurUser()
+        {
+            // update CurUser
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
+                sqlConn.Open();
+                string queryString = $"SELECT IsManager, IsEngineer, FirstName, LastName, Phone, Birthday, PointsAvailable, PointsUsed, CreditCard, Address FROM Users WHERE Users.UserID = {CurUser.UserID}";
+                SqlCommand query = new SqlCommand(queryString, sqlConn);
+                using (SqlDataReader reader = query.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        CurUser.IsManager = reader.GetBoolean(0);
+                        CurUser.IsEngineer = reader.GetBoolean(1);
+                        CurUser.FirstName = reader.GetString(2);
+                        CurUser.LastName = reader.GetString(3);
+                        if (!reader.IsDBNull(4))
+                        {
+                            CurUser.Phone = reader.GetString(4);
+                        }
+                        if (!reader.IsDBNull(5))
+                        {
+                            CurUser.Birthday = reader.GetDateTime(5);
+                        }
+                        CurUser.PointsAvailable = reader.GetInt32(6);
+                        CurUser.PointsUsed = reader.GetInt32(7);
+                        if (!reader.IsDBNull(8))
+                        {
+                            CurUser.CreditCard = reader.GetString(8);
+                        }
+                        if (!reader.IsDBNull(9))
+                        {
+                            CurUser.Address = reader.GetString(9);
+                        }
+                    }
+                }
+                sqlConn.Close();
+            }
+        }
+
         public void LoggedInLoop()
         {
             while (true)
@@ -64,6 +104,7 @@ namespace Air3550
                 Console.WriteLine("2. Change Account Information");
                 Console.WriteLine("3. View Past Flights");
                 Console.WriteLine("4. Cancel Flights");
+                Console.WriteLine("5. View Upcoming Flights");
                 Console.WriteLine("Q. Go Back\n");
                 if(CurUser.IsManager)
                 {
@@ -74,7 +115,7 @@ namespace Air3550
                     Console.WriteLine("E. Manage Flights");
                 }
                 string? input = Console.ReadLine();
-                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "Q" & input != "M" & input != "E"))
+                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "5" & input != "Q" & input != "M" & input != "E"))
                 {
                     Console.WriteLine("Please input a correct input");
                     continue;
@@ -85,17 +126,23 @@ namespace Air3550
                 {
                     case "1":
                         options.BookFlight(CurUser.UserID);
+                        UpdateCurUser();
                         break;
                     case "Q":
                         return;
                     case "2":
                         Login.ChangeAccountSettings(CurUser.UserID);
+                        UpdateCurUser();
                         break;
                     case "3":
-                        UserOptions.DisplayFlightHistory(CurUser.UserID);
+                        options.DisplayFlightHistory(CurUser.UserID);
                         break;
                     case "4":
-                        UserOptions.cancel();
+                        options.cancel();
+                        UpdateCurUser();
+                        break;
+                    case "5":
+                        options.DisplayUpcomingFlights(CurUser.UserID);
                         break;
                     case "M":
                         if(CurUser.IsManager) 
