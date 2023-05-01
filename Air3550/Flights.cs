@@ -817,8 +817,7 @@ namespace Air3550
                 }
                 using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
                 {
-                    // get value of isCard
-                    
+                    // get value of isCard                   
                     //string queryString = $"SELECT TOP 1 IsCard FROM Transactions WHERE FlightID = '{flight}' ORDER BY TransactionID DESC";
                     //SqlCommand query = new SqlCommand(queryString, sqlConn);
                     //SqlDataReader reader = query.ExecuteReader();
