@@ -474,6 +474,7 @@ namespace Air3550
                     {
                         break;
                     }
+                    airports.Close();
                 } while (true);
                 sqlConn.Close();
             }
@@ -816,8 +817,7 @@ namespace Air3550
                 }
                 using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
                 {
-                    // get value of isCard
-                    sqlConn.Open();
+                    // get value of isCard                   
                     //string queryString = $"SELECT TOP 1 IsCard FROM Transactions WHERE FlightID = '{flight}' ORDER BY TransactionID DESC";
                     //SqlCommand query = new SqlCommand(queryString, sqlConn);
                     //SqlDataReader reader = query.ExecuteReader();
@@ -940,8 +940,9 @@ namespace Air3550
                             string refundCardQueryString = $"DELETE FROM CardCharges WHERE UserID = {userID} AND TransactionID = {transactionID}";
                             SqlCommand refundCardQuery = new SqlCommand(refundCardQueryString, sqlConn);
                             refundCardQuery.ExecuteNonQuery();
-                            Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {userID} at original payment");
+                            Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {userID} at original payment");                     
                         }
+                       
                         else
                         {
                             string refundQueryString = $"UPDATE Users SET PointsAvailable = PointsAvailable + {paymentAmount} WHERE UserID = {userID}";
@@ -953,17 +954,20 @@ namespace Air3550
                         string markAsRefundedQueryString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightID}' AND UserID = '{userID}'";
                         SqlCommand markAsRefundedQuery = new SqlCommand(markAsRefundedQueryString, sqlConn);
                         markAsRefundedQuery.ExecuteNonQuery();
+transactionReader.Close();
                     }
+
                     else if (isRefunded == true)
                     {
                         Console.WriteLine($"The transaction associated with flight {flightID} has already been canceled and refunded.\n");
                     }
+
                     else
                     {
                         Console.WriteLine($"No transaction found for flight {flightID}\n");
                     }
                 }
-                transactionReader.Close();
+                
                 sqlConn.Close();
             }
         }
