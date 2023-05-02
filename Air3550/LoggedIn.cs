@@ -4,8 +4,10 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Air3550
 {
@@ -92,6 +94,61 @@ namespace Air3550
                 sqlConn.Close();
             }
         }
+        // gets the accounting information for the accountants
+        // need how many flights
+        // Percentage of capacity for each flight
+        // income per flight
+        // income for the company
+        public void AccountingInfo()
+        {
+            // Assuming monthly
+            // get the month they want
+            DateTime accountDate;
+            do
+            {
+                Console.WriteLine("Please input a day of the month: mm/dd/yyyy");
+                string? accountDateString = Console.ReadLine();
+                if (!DateTime.TryParse(accountDateString, out accountDate))
+                {
+                    Console.WriteLine("Invalid date format. Please enter a valid date in mm/dd/yyyy format.");
+                    continue;
+                }
+                break;
+            } while (true);
+            SqlDateTime sqlAccountingDate = new SqlDateTime(accountDate.Year, accountDate.Month, accountDate.Day);
+            // given the date, find all the flights from that month and give the information
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
+                Console.WriteLine("\n\n");
+                Console.WriteLine("FlightID, FlightNumber, Percentage Full, Income Per Flight");
+                Console.WriteLine("------------------------------------------------------------------------");
+                sqlConn.Open();
+                string queryString = $"SELECT Flights.FlightID, Flights.FlightNumber, (CAST((Planes.Seats - Flights.SeatsAvailable)AS FLOAT) / CAST((Planes.Seats) AS FLOAT)) * 100 AS PerFull, ((Planes.Seats - Flights.SeatsAvailable) * Flights.Price) AS IncomePerFlight" +
+                    $"  FROM Flights" +
+                    $"  JOIN Planes ON Flights.PlaneID = Planes.PlaneID" +
+                    $"  WHERE DATEDIFF(MONTH, DepartureDateTime, '{sqlAccountingDate}') = 0";
+                SqlCommand query = new SqlCommand(queryString, sqlConn);
+                using (SqlDataReader reader = query.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        Console.WriteLine($"{reader.GetInt32(0)}, {reader.GetInt32(1)}, {reader.GetDouble(2)}, {reader.GetSqlDecimal(3)}");
+                    }
+                }
+                queryString = $"  SELECT Count(*), SUM(((Planes.Seats - Flights.SeatsAvailable) * Flights.Price)) " +
+                    $"FROM Flights JOIN Planes On Flights.PlaneID = Planes.PlaneID " +
+                    $"WHERE DATEDIFF(MONTH, DepartureDateTime, '{sqlAccountingDate}') = 0";
+                query = new SqlCommand(queryString, sqlConn);
+                using (SqlDataReader reader = query.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        Console.WriteLine("\nSummary: Total Flights, Total Income");
+                        Console.WriteLine($"{reader.GetInt32(0)}, {reader.GetDecimal(1)}");
+                    }
+                }
+            }
+        }
 
         public void LoggedInLoop()
         {
@@ -109,13 +166,14 @@ namespace Air3550
                 if(CurUser.IsManager)
                 {
                     Console.WriteLine("M. Choose Planes");
+                    Console.WriteLine("A. Accounting");
                 }
                 if(CurUser.IsEngineer)
                 {
                     Console.WriteLine("E. Manage Flights");
                 }
                 string? input = Console.ReadLine();
-                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "5" & input != "Q" & input != "M" & input != "E"))
+                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "5" & input != "Q" & input != "M" & input != "E" & input != "A"))
                 {
                     Console.WriteLine("Please input a correct input");
                     continue;
@@ -148,6 +206,16 @@ namespace Air3550
                         if(CurUser.IsManager) 
                         {                      
                             flight.ManagePlanes();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Must be a Manager for this!");
+                        }
+                        break;
+                    case "A":
+                        if(CurUser.IsManager)
+                        {
+                            AccountingInfo();
                         }
                         else
                         {
