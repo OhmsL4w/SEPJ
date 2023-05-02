@@ -470,19 +470,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\cdavi\\.nuget\\packages\\": {}
+    "C:\\Users\\ohmra\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\DatabaseClass\\SEPJ\\Air3550\\Air3550.csproj",
+      "projectUniqueName": "D:\\GITHUB\\OhmsL4w\\SEPJ\\Air3550\\Air3550.csproj",
       "projectName": "Air3550",
-      "projectPath": "C:\\DatabaseClass\\SEPJ\\Air3550\\Air3550.csproj",
-      "packagesPath": "C:\\Users\\cdavi\\.nuget\\packages\\",
-      "outputPath": "C:\\DatabaseClass\\SEPJ\\Air3550\\obj\\",
+      "projectPath": "D:\\GITHUB\\OhmsL4w\\SEPJ\\Air3550\\Air3550.csproj",
+      "packagesPath": "C:\\Users\\ohmra\\.nuget\\packages\\",
+      "outputPath": "D:\\GITHUB\\OhmsL4w\\SEPJ\\Air3550\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\cdavi\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\ohmra\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
