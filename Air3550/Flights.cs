@@ -48,7 +48,6 @@ namespace Air3550
                 sqlConn.Close();
             }
         }
-
         public void ManagePlanes()
         {
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
@@ -145,6 +144,7 @@ namespace Air3550
                 }
             }
         }
+
         /*        public void DisplayAllFlights()
                 {
                     using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
@@ -170,7 +170,7 @@ namespace Air3550
                         sqlConn.Close();
                     }
                 }*/
-
+   
         public void UpdateFlight()
         {
             bool flightID = false;
@@ -784,7 +784,6 @@ namespace Air3550
                 sqlConn.Close();
             }
         }
-
         public void DeleteFlight()
         {
             bool flightID = false;

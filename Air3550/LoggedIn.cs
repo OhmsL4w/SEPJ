@@ -162,6 +162,7 @@ namespace Air3550
                 Console.WriteLine("3. View Past Flights");
                 Console.WriteLine("4. Cancel Flights");
                 Console.WriteLine("5. View Upcoming Flights");
+                Console.WriteLine("6. Print Boarding Pass");
                 Console.WriteLine("Q. Go Back\n");
                 if(CurUser.IsManager)
                 {
@@ -173,7 +174,7 @@ namespace Air3550
                     Console.WriteLine("E. Manage Flights");
                 }
                 string? input = Console.ReadLine();
-                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "5" & input != "Q" & input != "M" & input != "E" & input != "A"))
+                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "5" & input != "6" & input != "Q" & input != "M" & input != "E"))
                 {
                     Console.WriteLine("Please input a correct input");
                     continue;
@@ -201,6 +202,9 @@ namespace Air3550
                         break;
                     case "5":
                         options.DisplayUpcomingFlights(CurUser.UserID);
+                        break;
+                    case "6":
+                        options.printBoardingPass(CurUser.UserID);
                         break;
                     case "M":
                         if(CurUser.IsManager) 

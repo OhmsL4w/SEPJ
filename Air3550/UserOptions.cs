@@ -492,7 +492,7 @@ namespace Air3550
                         FlightDets.Parameters.AddWithValue("@DestinationCity", DestinationAirport);
                         FlightDets.Parameters.AddWithValue("@DepartureDate", DepartDate);
                         SqlDataReader reader = FlightDets.ExecuteReader();
-                        if (reader.HasRows) 
+                        if (reader.HasRows)
                         {
                             while (reader.Read())
                             {
@@ -1032,7 +1032,6 @@ namespace Air3550
                 sqlConn.Close();
             }
         }
-
         public void RefundCancelledFlight(int flightID)
         {
             using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
@@ -1043,42 +1042,47 @@ namespace Air3550
                 SqlCommand transactionQuery = new SqlCommand(transactionQueryString, sqlConn);
                 SqlDataReader transactionReader = transactionQuery.ExecuteReader();
                 transactionReader.Read();
-                decimal paymentAmount = (int)transactionReader["AmountCharged"];
-                int transactionID = (int)transactionReader["TransactionID"];
-                bool isRefunded = transactionReader.GetBoolean(2);
-                bool isCard = transactionReader.GetBoolean(3);
-                transactionReader.Close();
-                if (paymentAmount != -1 && isRefunded != true && transactionID != -1)
+                if (transactionReader.HasRows)
                 {
-                    // Refund the payment to the user
-                    if (isCard)
+                    
+                    decimal paymentAmount = (decimal)transactionReader["AmountCharged"];
+                    int transactionID = (int)transactionReader["TransactionID"];
+                    bool isRefunded = transactionReader.GetBoolean(2);
+                    bool isCard = transactionReader.GetBoolean(3);
+                    transactionReader.Close();
+                    if (paymentAmount != -1 && isRefunded != true && transactionID != -1)
                     {
-                        // deletes the Card Charge from our table, this is how to "refund card"
-                        string refundCardQueryString = $"DELETE FROM CardCharges WHERE UserID = {CurUser.UserID} AND TransactionID = {transactionID}";
-                        SqlCommand refundCardQuery = new SqlCommand(refundCardQueryString, sqlConn);
-                        refundCardQuery.ExecuteNonQuery();
-                        Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {CurUser.UserID} at original payment");
+                        // Refund the payment to the user
+                        if (isCard)
+                        {
+                            // deletes the Card Charge from our table, this is how to "refund card"
+                            string refundCardQueryString = $"DELETE FROM CardCharges WHERE UserID = {CurUser.UserID} AND TransactionID = {transactionID}";
+                            SqlCommand refundCardQuery = new SqlCommand(refundCardQueryString, sqlConn);
+                            refundCardQuery.ExecuteNonQuery();
+                            Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount} has been issued to user {CurUser.UserID} at original payment");
+                        }
+                        else
+                        {
+                            string refundQueryString = $"UPDATE Users SET PointsAvailable = PointsAvailable + {paymentAmount} WHERE UserID = {CurUser.UserID}";
+                            SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
+                            refundQuery.ExecuteNonQuery();
+                            Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount}, points has been issued to user {CurUser.UserID}'s account\n");
+                        }
+                        // Mark the transaction as refunded
+                        string markAsRefundedQueryString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightID}' AND UserID = '{CurUser.UserID}'";
+                        SqlCommand markAsRefundedQuery = new SqlCommand(markAsRefundedQueryString, sqlConn);
+                        markAsRefundedQuery.ExecuteNonQuery();
                     }
-                    else
+                    else if (isRefunded == true)
                     {
-                        string refundQueryString = $"UPDATE Users SET PointsAvailable = PointsAvailable + {paymentAmount} WHERE UserID = {CurUser.UserID}";
-                        SqlCommand refundQuery = new SqlCommand(refundQueryString, sqlConn);
-                        refundQuery.ExecuteNonQuery();
-                        Console.WriteLine($"Flight {flightID} has been canceled and a refund of ${paymentAmount}, points has been issued to user {CurUser.UserID}'s account\n");
+                        Console.WriteLine($"The transaction associated with flight {flightID} has already been canceled and refunded.\n");
                     }
-                    // Mark the transaction as refunded
-                    string markAsRefundedQueryString = $"UPDATE Transactions SET IsRefunded = 1 WHERE FlightID = '{flightID}' AND UserID = '{CurUser.UserID}'";
-                    SqlCommand markAsRefundedQuery = new SqlCommand(markAsRefundedQueryString, sqlConn);
-                    markAsRefundedQuery.ExecuteNonQuery();
-                }
-                else if (isRefunded == true)
-                {
-                    Console.WriteLine($"The transaction associated with flight {flightID} has already been canceled and refunded.\n");
                 }
                 else
                 {
-                    Console.WriteLine($"No transaction found for flight {flightID}\n");
+                        Console.WriteLine($"No transaction found for flight {flightID}\n");
                 }
+                transactionReader.Close();
                 sqlConn.Close();
             }
         }
@@ -1156,6 +1160,62 @@ namespace Air3550
                 Console.WriteLine("No flight history found for the given user.");
             }
         }
-    }
+        public void printBoardingPass(string username)
+        {
+            using (SqlConnection sqlConn = new SqlConnection("Server=34.162.94.248; Database=air3550; Uid=sqlserver; Password=123;"))
+            {
 
+                sqlConn.Open();
+                string boardingPassavail = $"SELECT users.FirstName, users.LastName, a.FlightNumber, a.OriginCity, a.DestinationCity, a.DepartureDateTime, a.ArrivalDateTime, a.ConCity, a.FirstConFlight,a.SecondConFlight," +
+                                           $"c1.FlightNumber AS FirstConFlightNumber, c1.OriginCity AS FirstConOriginCity, c1.DestinationCity AS FirstConDestCity, c1.DepartureDateTime AS FirstConFlightDepDateTime, c1.ArrivalDateTime AS FirstConFlightArrDateTime," +
+                                           $"c2.FlightNumber AS SecondConFlightNumber, c2.OriginCity AS SecondConOriginCity, c2.DestinationCity AS SecondConDestCity, c2.DepartureDateTime AS SecondConFlightDepDateTime, c2.ArrivalDateTime AS SecondConFlightArrDateTime "+
+                                           $"FROM Transactions " +
+                                           $"INNER JOIN flights AS a ON transactions.FlightID = a.FlightID " +
+                                           $"INNER JOIN users ON transactions.UserID = users.UserID " +
+                                           $"LEFT JOIN flights AS c1 ON a.FirstConFlight = c1.FlightID " +
+                                           $"LEFT JOIN flights AS c2 ON a.SecondConFlight = c2.FlightID " +
+                                           $"WHERE a.DepartureDateTime  <= DATEADD(HOUR, 24, GETDATE()) AND users.UserID = {username}";
+                SqlCommand BPQuery = new SqlCommand(boardingPassavail, sqlConn);
+                using (SqlDataReader reader = BPQuery.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            string Connection = reader.IsDBNull(reader.GetOrdinal("ConCity")) ? null : (string)reader["ConCity"];
+                            if (Connection == null)
+                            {
+                                Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------");
+                                Console.WriteLine($"Name: {reader["LastName"]}, {reader["FirstName"]}    Account Number: {username}");
+                                Console.WriteLine($"Flight Number: {reader["FlightNumber"]}  {reader["OriginCity"]} to {reader["DestinationCity"]}");
+                                Console.WriteLine($"Departure Date & Time from {reader["OriginCity"]} : {reader["DepartureDateTime"]} to Arrival Date & Time at {reader["DestinationCity"]} : {reader["ArrivalDateTime"]}");
+                                Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------");
+                            }
+                            else
+                            {
+                                Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------");
+                                Console.WriteLine($"Name: {reader["LastName"]}, {reader["FirstName"]}    Account Number: {username}");
+                                Console.WriteLine($"Flight Number: {reader["FlightNumber"]}  {reader["OriginCity"]} to {reader["DestinationCity"]} with a Connection at Aiport : {reader["ConCity"]}");
+                                Console.WriteLine("             -------------------------------------------------------------------");
+                                Console.WriteLine($"Flight Number: {reader["FirstConFlightNumber"]}  {reader["FirstConOriginCity"]} to {reader["FirstConDestCity"]}");
+                                Console.WriteLine($"Departure Date & Time from {reader["FirstConOriginCity"]} : {reader["FirstConFlightDepDateTime"]} to Arrival Date & Time at {reader["FirstConDestCity"]} : {reader["FirstConFlightArrDateTime"]}");
+                                Console.WriteLine("             -------------------------------------------------------------------");
+                                Console.WriteLine($"Flight Number: {reader["SecondConFlightNumber"]}  {reader["SecondConOriginCity"]} to {reader["SecondConDestCity"]}");
+                                Console.WriteLine($"Departure Date & Time from {reader["SecondConOriginCity"]} : {reader["SecondConFlightDepDateTime"]} to Arrival Date & Time at {reader["SecondConDestCity"]} : {reader["SecondConFlightArrDateTime"]}");
+                                Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------");
+                            }
+                            
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No Boarding Pass is available to print at the moment.\n");
+
+                    }
+
+                    sqlConn.Close();
+                }
+            }
+        }
+    }
 }
