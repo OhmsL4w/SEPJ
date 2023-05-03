@@ -174,7 +174,7 @@ namespace Air3550
                     Console.WriteLine("E. Manage Flights");
                 }
                 string? input = Console.ReadLine();
-                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "5" & input != "6" & input != "Q" & input != "M" & input != "E"))
+                if (input == null | (input != "1" & input != "2" & input != "3" & input != "4" & input != "5" & input != "6" & input != "Q" & input != "M" & input != "E" & input!= "A"))
                 {
                     Console.WriteLine("Please input a correct input");
                     continue;
