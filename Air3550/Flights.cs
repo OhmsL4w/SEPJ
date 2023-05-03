@@ -926,7 +926,7 @@ namespace Air3550
                 while (transactionReader.Read())
                 {
                     int userID = (int)transactionReader["UserID"];
-                    decimal paymentAmount = (int)transactionReader["AmountCharged"];
+                    decimal paymentAmount = (decimal)transactionReader["AmountCharged"];
                     int transactionID = (int)transactionReader["TransactionID"];
                     bool isRefunded = transactionReader.GetBoolean(2);
                     bool isCard = transactionReader.GetBoolean(3);
